@@ -456,17 +456,27 @@
       '<div class="loot">'+loot+'</div>'+
       '<div class="lootname">你夾到：'+names+'</div>'+
       '<div class="reason">'+best.r+'</div>'+
-      '<div class="acts"><button id="again">再夾一次</button><button class="p" id="share">話我知</button></div>';
+      '<div class="acts"><button id="again">再夾一次</button><button class="p" id="share">分享結果</button></div>';
     endEl.classList.add("on");
 
     document.getElementById("again").onclick=function(){
       endEl.classList.remove("on");
       reset();
     };
-    document.getElementById("share").onclick=function(){
+    var shareBtn=document.getElementById("share");
+    function copied(){
+      shareBtn.textContent="已複製 ✓";
+      setTimeout(function(){ shareBtn.textContent="分享結果"; },1600);
+    }
+    shareBtn.onclick=function(){
       var txt="我夾走咗一個城市 🎪\nGary 💕 琪琪\n我夾到："+names+"\n結果："+best.n+" — "+best.t;
-      if(navigator.share){ navigator.share({title:"夾走一個城市",text:txt}).catch(function(){}); }
-      else if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(function(){ /* copied */ }).catch(function(){}); }
+      if(navigator.share){
+        navigator.share({title:"夾走一個城市",text:txt}).catch(function(){
+          if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(copied).catch(function(){}); }
+        });
+      } else if(navigator.clipboard){
+        navigator.clipboard.writeText(txt).then(copied).catch(function(){});
+      }
     };
   }
 
