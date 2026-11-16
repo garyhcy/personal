@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>我哋嘅第一次旅行</title>
+<style>
+  :root{
+    --bg:#0C0D12;
+    --panel:#16181F;
+    --line:#2A2D38;
+    --ink:#F2EDE4;
+    --dim:#8A8274;
+    --rose:#E8956D;
+    --sh:#D9A24D;
+    --tw:#E2654E;
+    --jp:#6E9BD8;
+    --bj:#C8435C;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+  html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidden}
+  #app{width:100%;height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;position:relative}
+
+  /* === TITLE === */
+  #title{position:absolute;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px;transition:opacity .5s}
+  #title.hide{opacity:0;pointer-events:none}
+  #title .heart{font-size:56px;margin-bottom:24px;animation:heartbeat 1.5s ease-in-out infinite}
+  @keyframes heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}}
+  #title h1{font-family:var(--serif);font-size:36px;font-weight:700;line-height:1.3;text-align:center;margin-bottom:16px}
+  #title h1 .em{color:var(--rose)}
+  #title .sub{color:var(--dim);font-size:15px;line-height:1.9;text-align:center;max-width:300px;margin-bottom:40px}
+  #title .names{display:flex;gap:16px;margin-bottom:32px}
+  #title input{width:140px;padding:12px 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font-size:16px;font-family:var(--sans);text-align:center;outline:none;transition:border-color .2s}
+  #title input:focus{border-color:var(--rose)}
+  #title input::placeholder{color:#5A5348}
+  .btn-start{padding:16px 56px;border-radius:999px;border:none;background:var(--rose);color:#111;font-size:17px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:transform .15s}
+  .btn-start:active{transform:scale(.96)}
+
+  /* === STORY === */
+  #story{flex:1;display:flex;flex-direction:column;opacity:0;transition:opacity .4s;pointer-events:none;overflow:hidden}
+  #story.show{opacity:1;pointer-events:auto}
+
+  #story-header{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  #story-header .chapter{font-size:12px;letter-spacing:.2em;color:var(--dim)}
+  #story-header .couple{font-size:13px;color:var(--rose)}
+
+  #story-body{flex:1;overflow-y:auto;padding:24px 20px;-webkit-overflow-scrolling:touch}
+  #story-body::-webkit-scrollbar{width:3px}
+  #story-body::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
+
+  .scene{margin-bottom:24px;animation:fadeIn .5s ease both}
+  .scene-illust{text-align:center;font-size:48px;margin-bottom:16px}
+  .scene-title{font-family:var(--serif);font-size:22px;font-weight:600;margin-bottom:16px;line-height:1.3;color:var(--rose)}
+  .scene-text{font-size:16px;line-height:1.9;color:#D4CEC4;margin-bottom:20px;white-space:pre-line}
+  .scene-text .you{color:var(--rose);font-weight:600}
+  .scene-text .partner{color:#A8C5E8;font-weight:600}
+  .scene-text .action{color:#8FA882;font-style:italic}
+
+  .choices{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+  .choice{
+    padding:18px 20px;border-radius:14px;border:1.5px solid var(--line);
+    background:var(--panel);color:var(--ink);font-size:15px;line-height:1.6;
+    cursor:pointer;transition:border-color .2s,background .2s,transform .12s;text-align:left;
+    font-family:var(--sans);
+  }
+  .choice:hover{border-color:var(--rose);background:rgba(232,149,109,.06)}
+  .choice:active{transform:scale(.98)}
+  .choice .emoji{font-size:20px;margin-right:10px}
+  .choice .hint{display:block;font-size:12px;color:var(--dim);margin-top:6px;margin-left:30px}
+
+  /* === RESULT === */
+  #result{position:absolute;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px;opacity:0;pointer-events:none;transition:opacity .5s;overflow-y:auto}
+  #result.show{opacity:1;pointer-events:auto}
+  #result .kicker{font-size:11px;letter-spacing:.3em;color:var(--dim);margin-bottom:16px}
+  #result .couple-names{font-family:var(--serif);font-size:18px;color:var(--rose);margin-bottom:24px}
+  #result .city-name{font-family:var(--serif);font-size:52px;font-weight:700;margin-bottom:12px;animation:popIn .5s cubic-bezier(.2,.8,.2,1) both}
+  #result .theme{font-size:16px;color:#C6BEAF;text-align:center;line-height:1.6;margin-bottom:24px;animation:popIn .5s .1s cubic-bezier(.2,.8,.2,1) both}
+  #result .reason{padding:20px 24px;border-left:2px solid var(--rose);background:rgba(232,149,109,.06);font-size:15px;line-height:1.85;color:#E7E1D6;max-width:340px;margin-bottom:28px;animation:popIn .5s .2s cubic-bezier(.2,.8,.2,1) both;white-space:pre-line}
+  #result .memories{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:340px;margin-bottom:32px;animation:popIn .5s .3s cubic-bezier(.2,.8,.2,1) both}
+  #result .mem{font-size:12px;padding:6px 12px;border-radius:8px;background:rgba(232,149,109,.08);border:1px solid rgba(232,149,109,.2);color:var(--rose)}
+  #result .actions{display:flex;gap:12px;animation:popIn .5s .4s cubic-bezier(.2,.8,.2,1) both}
+  #result .btn{padding:14px 28px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--sans);border:1.5px solid var(--line);background:transparent;color:var(--ink)}
+  #result .btn.primary{background:var(--rose);color:#111;border-color:var(--rose)}
+
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @keyframes popIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+  .memory-flash{position:absolute;inset:0;z-index:70;background:rgba(12,13,18,.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+  .memory-flash.show{opacity:1;pointer-events:auto}
+  .memory-flash .content{text-align:center;padding:40px}
+  .memory-flash .icon{font-size:48px;margin-bottom:16px}
+  .memory-flash .text{font-family:var(--serif);font-size:20px;color:var(--rose);line-height:1.6}
+  .memory-flash .sub{font-size:14px;color:var(--dim);margin-top:12px}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TITLE -->
+  <div id="title">
+    <div class="heart">💕</div>
+    <h1>我哋嘅<br><span class="em">第一次旅行</span></h1>
+    <div class="sub">一個屬於你哋兩個嘅故事。<br>每一個選擇，都係你哋一齊做。<br>最後，我哋會話你知，邊個城市最啱你哋。</div>
+    <div class="names">
+      <input type="text" id="name1" placeholder="你嘅名" maxlength="8">
+      <input type="text" id="name2" placeholder="佢嘅名" maxlength="8">
+    </div>
+    <button class="btn-start" id="startBtn">開始我哋嘅故事</button>
+  </div>
+
+  <!-- STORY -->
+  <div id="story">
+    <div id="story-header">
+      <div class="chapter" id="chapterLabel">CHAPTER 1</div>
+      <div class="couple" id="coupleLabel"></div>
+    </div>
+    <div id="story-body"></div>
+  </div>
+
+  <!-- MEMORY FLASH -->
+  <div class="memory-flash" id="memoryFlash">
+    <div class="content">
+      <div class="icon">💝</div>
+      <div class="text" id="memText"></div>
+      <div class="sub">你哋共同嘅記憶</div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result">
+    <div class="kicker">你哋嘅故事，屬於</div>
+    <div class="couple-names" id="resCouple"></div>
+    <div class="city-name" id="resCity"></div>
+    <div class="theme" id="resTheme"></div>
+    <div class="reason" id="resReason"></div>
+    <div class="memories" id="resMem"></div>
+    <div class="actions">
+      <button class="btn" id="againBtn">再玩</button>
+      <button class="btn primary" id="shareBtn">Share</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============ STORY DATA ============
+let name1="你",name2="佢";
+
+const CITIES={
+  sh:{name:"上海",theme:"梧桐樹與外灘的都會浪漫",color:"#D9A24D",
+      reason:"你哋鍾意慢活，鍾意有質感嘅嘢。\n上海嘅洋房、咖啡、江景，就好似你哋嘅愛情——\n唔急，但每一個細節都值得品味。"},
+  tw:{name:"台灣",theme:"夜市煙火氣＋溫泉甜點",color:"#E2654E",
+      reason:"你哋鍾意簡單嘅快樂，鍾意一齊食好嘢。\n台灣嘅夜市、溫泉、人情味，就好似你哋嘅相處——\n唔使刻意，自然就已經好舒服。"},
+  jp:{name:"日本",theme:"關西紅葉尾＋燈飾＋和牛",color:"#6E9BD8",
+      reason:"你哋鍾意儀式感，鍾意為對方製造驚喜。\n日本嘅季節、燈飾、懷石料理，就好似你哋嘅愛情——\n每一個時刻，都值得認真對待。"},
+  bj:{name:"北京",theme:"皇城冬日＋潮玩 IP 朝聖",color:"#C8435C",
+      reason:"你哋鍾意一齊冒險，鍾意共同嘅回憶。\n北京嘅故宮、樂園、冬日氣氛，就好似你哋嘅關係——\n有歷史嘅厚重，亦有玩樂嘅童心。"}
+};
+
+const STORY=[
+  {
+    chapter:"CHAPTER 1",
+    illust:"✈️",
+    title:"神秘機票",
+    text:`今日係一個普通嘅星期日。
+
+<span class="you">{name1}</span> 同 <span class="partner">{name2}</span> 喺屋企，攬住梳化睇電視。突然，門鈴響。
+
+你開門，見到一個信封，入面有兩張機票，同一張字條：
+
+「去一個屬於你哋嘅城市。四日三夜，重新認識對方。」
+
+你望住 <span class="partner">{name2}</span>，佢眼裏有光。`,
+    choices:[
+      {emoji:"🌆",text:"「我哋去一個有歷史、有故事嘅城市。」",hint:"鍾意文化、建築、慢活",w:{sh:3,bj:2,jp:1}},
+      {emoji:"🍜",text:"「我哋去一個可以一路行一路食嘅地方。」",hint:"鍾意美食、輕鬆、隨性",w:{tw:3,jp:1}},
+      {emoji:"⛩️",text:"「我哋去一個有儀式感、好靚嘅地方。」",hint:"鍾意季節、浪漫、精緻",w:{jp:3,sh:1}},
+      {emoji:"🎢",text:"「我哋去一個可以一齊玩、一齊癲嘅地方。」",hint:"鍾意冒險、玩樂、新鮮感",w:{bj:3,tw:1}}
+    ]
+  },
+  {
+    chapter:"CHAPTER 2",
+    illust:"🌅",
+    title:"第一個清晨",
+    text:`飛機降落。你哋拖住行李，行出機場。
+
+<span class="partner">{name2}</span> 呵欠連連，但係好興奮。「我哋而家去邊？」
+
+你望住佢，突然覺得，呢一刻，無論去邊，只要有佢喺身邊，就已經好幸福。`,
+    choices:[
+      {emoji:"☕",text:"「去一間靚嘅咖啡店，慢慢歎返個早餐。」",hint:"享受兩人時光",w:{sh:3,jp:1}},
+      {emoji:"🍢",text:"「去街市或者夜市，食勻晒啲小食。」",hint:"一齊食好嘢",w:{tw:3}},
+      {emoji:"🏯",text:"「去一個古老嘅地方，感受歷史。」",hint:"一齊探索",w:{jp:2,bj:2}},
+      {emoji:"🎡",text:"「去主題樂園，玩到攰先返酒店。」",hint:"一齊玩",w:{bj:3}}
+    ]
+  },
+  {
+    chapter:"CHAPTER 3",
+    illust:"💑",
+    title:"午后嘅陽光",
+    text:`食完嘢，你哋喺街道上散步。
+
+陽光好好，<span class="partner">{name2}</span> 拖住你嘅手，突然停低。
+
+「你知唔知，我覺得最浪漫嘅係咩？」佢問。
+
+你搖頭。
+
+「就係咁樣，同你一齊，唔使做咩特別嘢，已經好開心。」`,
+    choices:[
+      {emoji:"🌳",text:"「我哋去一個有樹、有花、有陽光嘅地方。」",hint:"自然、寧靜",w:{sh:2,jp:2}},
+      {emoji:"🏮",text:"「我哋去一個熱鬧嘅地方，感受人氣。」",hint:"熱鬧、煙火氣",w:{tw:3,bj:1}},
+      {emoji:"🎨",text:"「我哋去睇展覽，或者一啲靚嘅嘢。」",hint:"藝術、美感",w:{sh:2,jp:2}},
+      {emoji:"🎪",text:"「我哋去一個特別嘅地方，影好多相。」",hint:"打卡、回憶",w:{bj:3,tw:1}}
+    ]
+  },
+  {
+    chapter:"CHAPTER 4",
+    illust:"🌙",
+    title:"夜晚嘅魔法",
+    text:`天黑咗。城市嘅燈光亮起。
+
+<span class="partner">{name2}</span> 挨住你嘅肩，你聞到佢頭髮嘅香味。
+
+「今晚，我哋做咩好？」佢細聲問。
+
+你望住佢，心裏面有無數個答案。`,
+    choices:[
+      {emoji:"🍷",text:"「去一間有景嘅餐廳，食一餐正式嘅晚餐。」",hint:"浪漫、儀式感",w:{sh:3,jp:2}},
+      {emoji:"🌃",text:"「去夜市，食到飽，然後拖手行返酒店。」",hint:"輕鬆、甜蜜",w:{tw:3}},
+      {emoji:"✨",text:"「去睇燈飾，或者夜景，影好多相。」",hint:"浪漫、回憶",w:{jp:3,bj:1}},
+      {emoji:"🛁",text:"「去浸溫泉，放鬆晒，然後攬住瞓。」",hint:"親密、放鬆",w:{tw:2,jp:2}}
+    ]
+  },
+  {
+    chapter:"CHAPTER 5",
+    illust:"💝",
+    title:"最後嘅選擇",
+    text:`旅程嘅最後一日。
+
+你哋坐喺酒店嘅窗邊，望住外面嘅城市。
+
+<span class="partner">{name2}</span> 問：「你覺得，呢個城市，最啱我哋嘅係咩？」
+
+你諗咗一陣，然後答：`,
+    choices:[
+      {emoji:"🏛️",text:"「係嗰啲古老嘅建築，同埋我哋一齊行過嘅街道。」",hint:"歷史、共同回憶",w:{sh:2,bj:2,jp:1}},
+      {emoji:"🍡",text:"「係嗰啲好食嘅嘢，同埋我哋一齊食嘅時光。」",hint:"美食、簡單快樂",w:{tw:3}},
+      {emoji:"🌸",text:"「係嗰啲靚嘅風景，同埋我哋一齊睇嘅感動。」",hint:"美景、浪漫",w:{jp:3,sh:1}},
+      {emoji:"🎠",text:"「係嗰啲好玩嘅嘢，同埋我哋一齊笑嘅時刻。」",hint:"玩樂、開心",w:{bj:3,tw:1}}
+    ]
+  }
+];
+
+// ============ GAME ENGINE ============
+let currentScene=0,scores={sh:0,tw:0,jp:0,bj:0},memories=[],startTime=0;
+const $=s=>document.querySelector(s);
+
+function startGame(){
+  name1=$("#name1").value.trim()||"你";
+  name2=$("#name2").value.trim()||"佢";
+  currentScene=0;scores={sh:0,tw:0,jp:0,bj:0};memories=[];startTime=Date.now();
+  $("#title").classList.add("hide");
+  $("#story").classList.add("show");
+  $("#coupleLabel").textContent=name1+" 💕 "+name2;
+  showScene(0);
+}
+
+function showScene(idx){
+  const scene=STORY[idx];
+  $("#chapterLabel").textContent=scene.chapter;
+  const body=$("#story-body");
+  const text=scene.text.replace(/{name1}/g,name1).replace(/{name2}/g,name2);
+  body.innerHTML=`
+    <div class="scene">
+      <div class="scene-illust">${scene.illust}</div>
+      <div class="scene-title">${scene.title}</div>
+      <div class="scene-text">${text}</div>
+      <div class="choices">${scene.choices.map((c,i)=>`
+        <button class="choice" data-idx="${i}">
+          <span class="emoji">${c.emoji}</span>${c.text}
+          ${c.hint?`<span class="hint">${c.hint}</span>`:""}
+        </button>
+      `).join("")}</div>
+    </div>
+  `;
+  body.scrollTop=0;
+
+  body.querySelectorAll(".choice").forEach(btn=>{
+    btn.onclick=()=>{
+      const choice=scene.choices[+btn.dataset.idx];
+      // Add scores
+      for(const k in choice.w)scores[k]+=choice.w[k];
+      // Check for memory moment
+      const mem=getMemory(idx,+btn.dataset.idx);
+      if(mem){
+        memories.push(mem);
+        flashMemory(mem,()=>{
+          if(idx<STORY.length-1)showScene(idx+1);
+          else showResult();
+        });
+      }else{
+        if(idx<STORY.length-1)showScene(idx+1);
+        else showResult();
+      }
+    };
+  });
+}
+
+function getMemory(sceneIdx,choiceIdx){
+  const mems={
+    0:["神秘機票嘅驚喜","一齊出發嘅興奮","對未來嘅期待","冒險嘅勇氣"],
+    1:["第一個清晨嘅陽光","一齊食早餐嘅溫馨","探索嘅好奇心","玩到攰嘅滿足"],
+    2:["拖手散步嘅甜蜜","熱鬧中嘅依偎","一齊睇展嘅寧靜","影相嘅笑容"],
+    3:["浪漫晚餐嘅烛光","夜市嘅笑聲","燈飾下嘅擁抱","溫泉嘅溫暖"],
+    4:["共同嘅回憶","簡單嘅快樂","深刻嘅感動","開心嘅時刻"]
+  };
+  return mems[sceneIdx]?.[choiceIdx]||null;
+}
+
+function flashMemory(memory,callback){
+  $("#memText").textContent=memory;
+  $("#memoryFlash").classList.add("show");
+  setTimeout(()=>{
+    $("#memoryFlash").classList.remove("show");
+    if(callback)callback();
+  },1800);
+}
+
+function showResult(){
+  $("#story").classList.remove("show");
+  const ranked=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const win=CITIES[ranked[0][0]];
+  const total=Object.values(scores).reduce((a,b)=>a+b,0)||1;
+
+  $("#result").classList.add("show");
+  $("#resCouple").textContent=name1+" 💕 "+name2;
+  $("#resCity").textContent=win.name;
+  $("#resCity").style.color=win.color;
+  $("#resTheme").textContent=win.theme;
+  $("#resReason").textContent=win.reason;
+  $("#resMem").innerHTML=memories.slice(0,6).map(m=>`<span class="mem">${m}</span>`).join("");
+}
+
+// Events
+$("#startBtn").onclick=startGame;
+$("#againBtn").onclick=()=>{
+  $("#result").classList.remove("show");
+  $("#title").classList.remove("hide");
+};
+$("#shareBtn").onclick=()=>{
+  const ranked=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const win=CITIES[ranked[0][0]];
+  const txt=`我哋玩完「我哋嘅第一次旅行」\n${name1} 💕 ${name2}\n結果：${win.name}\n${win.theme}\n\n${win.reason}`;
+  if(navigator.share)navigator.share({title:"我哋嘅第一次旅行",text:txt}).catch(()=>{});
+  else if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>{
+    $("#shareBtn").textContent="已複製";
+  }).catch(()=>{});
+};
+
+// Enter key on inputs
+$("#name1").addEventListener("keydown",e=>{if(e.key==="Enter")$("#name2").focus()});
+$("#name2").addEventListener("keydown",e=>{if(e.key==="Enter")startGame()});
+</script>
+</body>
+</html>
