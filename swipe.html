@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>滑出你嘅城市</title>
+<style>
+  :root{
+    --bg:#0B0C10;
+    --ink:#F0EBE0;
+    --dim:#8A8274;
+    --sh:#D9A24D;
+    --tw:#E2654E;
+    --jp:#6E9BD8;
+    --bj:#C8435C;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--sans);touch-action:none}
+  #app{position:relative;width:100%;height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column}
+
+  /* === INTRO === */
+  #intro{position:absolute;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px;transition:opacity .4s}
+  #intro.hide{opacity:0;pointer-events:none}
+  #intro h1{font-family:var(--serif);font-size:38px;font-weight:700;line-height:1.3;text-align:center;margin-bottom:16px}
+  #intro h1 .em{color:var(--sh)}
+  #intro p{color:var(--dim);font-size:15px;line-height:1.8;text-align:center;max-width:280px;margin-bottom:40px}
+  #intro .demo{width:220px;height:300px;border-radius:18px;border:1.5px solid #2A2D35;position:relative;margin-bottom:32px;overflow:hidden}
+  #intro .demo .card-demo{position:absolute;inset:0;border-radius:18px;background:linear-gradient(135deg,#1a1d24,#12141a);display:flex;align-items:center;justify-content:center;animation:demoSwipe 3s ease-in-out infinite}
+  #intro .demo .card-demo span{font-family:var(--serif);font-size:20px;color:var(--ink);opacity:.6}
+  @keyframes demoSwipe{0%,20%{transform:translateX(0) rotate(0)}40%,50%{transform:translateX(30px) rotate(6deg)}60%,70%{transform:translateX(-30px) rotate(-6deg)}80%,100%{transform:translateX(0) rotate(0)}}
+  #intro .hint-arrows{display:flex;gap:24px;font-size:13px;color:var(--dim);margin-bottom:32px}
+  #intro .hint-arrows span{display:flex;align-items:center;gap:6px}
+  .btn-start{padding:16px 48px;border-radius:999px;border:none;background:var(--ink);color:#111;font-size:17px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+  .btn-start:active{transform:scale(.96)}
+
+  /* === GAME === */
+  #game{flex:1;display:flex;flex-direction:column;position:relative;opacity:0;transition:opacity .4s;pointer-events:none}
+  #game.show{opacity:1;pointer-events:auto}
+
+  /* progress */
+  #progress{display:flex;gap:5px;padding:18px 20px 8px;z-index:10}
+  #progress .seg{flex:1;height:3px;border-radius:2px;background:#252830;transition:background .3s}
+  #progress .seg.done{background:var(--ink)}
+
+  /* card stack */
+  #stack{flex:1;position:relative;margin:12px 20px;min-height:0}
+  .card{
+    position:absolute;inset:0;border-radius:20px;overflow:hidden;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    cursor:grab;touch-action:none;
+    box-shadow:0 8px 40px rgba(0,0,0,.5);
+    transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .3s;
+    will-change:transform;
+  }
+  .card:active{cursor:grabbing}
+  .card.dragging{transition:none}
+  .card .bg-art{position:absolute;inset:0;z-index:0}
+  .card .overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.82) 0%,rgba(0,0,0,.3) 50%,transparent 100%);z-index:1}
+  .card .content{position:relative;z-index:2;padding:28px 24px 32px}
+  .card .city-label{font-size:11px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:8px;opacity:.7}
+  .card .city-name{font-family:var(--serif);font-size:42px;font-weight:700;line-height:1.1;margin-bottom:10px}
+  .card .memory{font-size:16px;line-height:1.65;color:#D4CEC4;max-width:300px}
+  .card .tag{display:inline-block;font-size:12px;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,.1);margin-top:12px;margin-right:6px;color:#BDB6A6}
+  .card .stamp{position:absolute;top:32px;right:24px;z-index:3;font-size:48px;opacity:0;transform:rotate(-15deg);transition:opacity .15s}
+  .card .stamp.like{opacity:1}
+  .card .stamp.nope{opacity:1;transform:rotate(15deg)}
+
+  /* buttons */
+  #actions{display:flex;justify-content:center;gap:28px;padding:16px 0 28px;z-index:10}
+  .act-btn{width:64px;height:64px;border-radius:50%;border:1.5px solid #2A2D35;background:transparent;display:grid;place-items:center;font-size:28px;cursor:pointer;transition:transform .15s,border-color .2s;font-family:var(--sans);color:var(--ink)}
+  .act-btn:active{transform:scale(.9)}
+  .act-btn.like:hover{border-color:var(--tw)}
+  .act-btn.nope:hover{border-color:var(--dim)}
+
+  /* === RESULT === */
+  #result{position:absolute;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px;opacity:0;pointer-events:none;transition:opacity .5s}
+  #result.show{opacity:1;pointer-events:auto}
+  #result .kicker{font-size:11px;letter-spacing:.3em;color:var(--dim);margin-bottom:12px}
+  #result .city-name{font-family:var(--serif);font-size:56px;font-weight:700;margin-bottom:8px;animation:popIn .5s cubic-bezier(.2,.8,.2,1) both}
+  #result .theme{font-size:16px;color:#C6BEAF;text-align:center;line-height:1.6;margin-bottom:24px;animation:popIn .5s .1s cubic-bezier(.2,.8,.2,1) both}
+  #result .quote{padding:20px 24px;border-left:2px solid var(--sh);background:rgba(255,255,255,.03);font-family:var(--serif);font-size:17px;line-height:1.75;color:#E7E1D6;max-width:320px;margin-bottom:32px;animation:popIn .5s .2s cubic-bezier(.2,.8,.2,1) both}
+  #result .bars{width:100%;max-width:300px;margin-bottom:32px;animation:popIn .5s .3s cubic-bezier(.2,.8,.2,1) both}
+  #result .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  #result .bar-row .nm{width:40px;font-size:13px;font-weight:600}
+  #result .bar-row .track{flex:1;height:6px;border-radius:3px;background:#1E2129;overflow:hidden}
+  #result .bar-row .fill{height:100%;width:0;border-radius:3px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  #result .bar-row .pct{width:36px;text-align:right;font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+  #result .liked-memories{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:320px;margin-bottom:32px;animation:popIn .5s .4s cubic-bezier(.2,.8,.2,1) both}
+  #result .mem-chip{font-size:11px;padding:5px 10px;border-radius:6px;background:#15181F;border:1px solid #2A2D35;color:#A9A292}
+  #result .actions{display:flex;gap:12px;animation:popIn .5s .5s cubic-bezier(.2,.8,.2,1) both}
+  #result .btn{padding:14px 28px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--sans);border:1.5px solid #2A2D35;background:transparent;color:var(--ink)}
+  #result .btn.primary{background:var(--ink);color:#111;border-color:var(--ink)}
+  @keyframes popIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+  /* city art backgrounds */
+  .art-sh{background:radial-gradient(ellipse at 30% 20%,rgba(217,162,77,.25),transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(217,162,77,.1),transparent 50%),#1a1410}
+  .art-tw{background:radial-gradient(ellipse at 70% 30%,rgba(226,101,78,.3),transparent 60%),radial-gradient(ellipse at 20% 70%,rgba(226,101,78,.12),transparent 50%),#1a1210}
+  .art-jp{background:radial-gradient(ellipse at 50% 10%,rgba(110,155,216,.25),transparent 60%),radial-gradient(ellipse at 30% 90%,rgba(110,155,216,.1),transparent 50%),#0e1420}
+  .art-bj{background:radial-gradient(ellipse at 60% 40%,rgba(200,67,92,.25),transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(200,67,92,.1),transparent 50%),#1a0e14}
+
+  .icon-float{position:absolute;font-size:64px;opacity:.12;z-index:0;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- INTRO -->
+  <div id="intro">
+    <h1>滑出你嘅<br><span class="em">城市</span></h1>
+    <p>唔使諗，憑直覺。<br>每張卡係一個城市嘅靈魂。<br>向右＝想去，向左＝略過。</p>
+    <div class="demo">
+      <div class="card-demo"><span>← →</span></div>
+    </div>
+    <div class="hint-arrows">
+      <span>← 略過</span>
+      <span>→ 想去</span>
+    </div>
+    <button class="btn-start" id="startBtn">開始</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="game">
+    <div id="progress"></div>
+    <div id="stack"></div>
+    <div id="actions">
+      <button class="act-btn nope" id="nopeBtn">✕</button>
+      <button class="act-btn like" id="likeBtn">♥</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result">
+    <div class="kicker">你嘅直覺揀咗</div>
+    <div class="city-name" id="resCity"></div>
+    <div class="theme" id="resTheme"></div>
+    <div class="quote" id="resQuote"></div>
+    <div class="bars" id="resBars"></div>
+    <div class="liked-memories" id="resMem"></div>
+    <div class="actions">
+      <button class="btn" id="againBtn">再玩</button>
+      <button class="btn primary" id="shareBtn">Share</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CITIES = {
+  sh:{name:"上海",theme:"梧桐樹與外灘的都會浪漫",color:"#D9A24D",art:"art-sh",icon:"🏙️",
+      quote:"食完火鍋行返酒店，一路是梧桐樹和江風。",
+      memories:["洋房火鍋嘅第一啖湯","武康路嘅樹影","外灘夜景，風吹到頭都痛"]},
+  tw:{name:"台灣",theme:"夜市煙火氣＋溫泉甜點",color:"#E2654E",art:"art-tw",icon:"🧋",
+      quote:"凌晨三點仲食到和牛燒肉，第二朝去浸溫泉。",
+      memories:["凌晨三點嘅和牛燒肉","北投溫泉，皮膚皺晒","夜市嘅燈膽同蒸氣"]},
+  jp:{name:"日本",theme:"關西紅葉尾＋燈飾＋和牛",color:"#6E9BD8",art:"art-jp",icon:"⛩️",
+      quote:"京都尾紅同御堂筋燈飾，同一晚發生。",
+      memories:["清水寺嘅尾紅","御堂筋嘅燈飾","黑門市場嘅即開生蠔"]},
+  bj:{name:"北京",theme:"皇城冬日＋潮玩 IP 朝聖",color:"#C8435C",art:"art-bj",icon:"🏰",
+      quote:"MOLLY 城堡門口，你企足十分鐘唔捨得行入去。",
+      memories:["MOLLY 城堡嗰一刻","故宮角樓嘅日落","銅鍋涮羊嘅白氣"]}
+};
+const ORDER = ["sh","tw","jp","bj"];
+// Build 12 cards: each city appears 3 times with different memory
+const DECK = [];
+ORDER.forEach(k=>{
+  CITIES[k].memories.forEach((m,i)=>{
+    DECK.push({city:k,memory:m,idx:i});
+  });
+});
+// Shuffle deck
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+let deck=[], cursor=0, liked=[], nope=[];
+let dragging=false, startX=0, startY=0, curX=0, curY=0, activeCard=null;
+
+const $=s=>document.querySelector(s);
+const app=$("#app"), stack=$("#stack"), prog=$("#progress");
+
+function init(){
+  deck=shuffle([...DECK]);
+  cursor=0; liked=[]; nope=[];
+  renderProgress();
+  renderStack();
+}
+
+function renderProgress(){
+  prog.innerHTML=deck.map((_,i)=>`<div class="seg ${i<cursor?'done':''}"></div>`).join("");
+}
+
+function renderStack(){
+  stack.innerHTML="";
+  // Show top 3 cards
+  const visible=deck.slice(cursor,cursor+3);
+  visible.reverse().forEach((c,vi)=>{
+    const realIdx=visible.length-1-vi;
+    const city=CITIES[c.city];
+    const el=document.createElement("div");
+    el.className=`card ${city.art}`;
+    el.style.zIndex=10-realIdx;
+    el.style.transform=`scale(${1-realIdx*.04}) translateY(${realIdx*8}px)`;
+    el.style.opacity=realIdx===0?"1":".6";
+    el.dataset.city=c.city;
+    el.dataset.memory=c.memory;
+    el.innerHTML=`
+      <div class="bg-art"></div>
+      <div class="overlay"></div>
+      <div class="stamp like" style="color:#4ADE80">♥</div>
+      <div class="stamp nope" style="color:#F87171;left:24px;right:auto">✕</div>
+      <div class="content">
+        <div class="city-label" style="color:${city.color}">${city.name}</div>
+        <div class="memory">${c.memory}</div>
+        <div class="tag">${city.icon} ${city.theme.split("＋")[0]}</div>
+      </div>`;
+    stack.appendChild(el);
+    if(realIdx===0){
+      activeCard=el;
+      attachDrag(el);
+    }
+  });
+}
+
+function attachDrag(el){
+  el.addEventListener("pointerdown",e=>{
+    dragging=true;startX=e.clientX;startY=e.clientY;curX=0;curY=0;
+    el.classList.add("dragging");
+    el.setPointerCapture(e.pointerId);
+  });
+  el.addEventListener("pointermove",e=>{
+    if(!dragging)return;
+    curX=e.clientX-startX;curY=e.clientY-startY;
+    const rot=curX*.06;
+    el.style.transform=`translate(${curX}px,${curY*.3}px) rotate(${rot}deg)`;
+    // stamps
+    const likeStamp=el.querySelector(".stamp.like");
+    const nopeStamp=el.querySelector(".stamp.nope");
+    likeStamp.style.opacity=curX>40?Math.min((curX-40)/80,1):0;
+    nopeStamp.style.opacity=curX<-40?Math.min((-curX-40)/80,1):0;
+  });
+  el.addEventListener("pointerup",e=>{
+    if(!dragging)return;
+    dragging=false;
+    el.classList.remove("dragging");
+    if(Math.abs(curX)>100){
+      swipe(curX>0?"like":"nope");
+    }else{
+      el.style.transform="";
+      el.querySelectorAll(".stamp").forEach(s=>s.style.opacity=0);
+    }
+  });
+  el.addEventListener("pointercancel",()=>{
+    dragging=false;el.classList.remove("dragging");el.style.transform="";
+    el.querySelectorAll(".stamp").forEach(s=>s.style.opacity=0);
+  });
+}
+
+function swipe(dir){
+  if(!activeCard)return;
+  const c=deck[cursor];
+  const city=CITIES[c.city];
+  if(dir==="like"){
+    liked.push(c);
+    activeCard.style.transform=`translate(${window.innerWidth*1.2}px,${curY*.3}px) rotate(30deg)`;
+    activeCard.style.opacity="0";
+  }else{
+    nope.push(c);
+    activeCard.style.transform=`translate(-${window.innerWidth*1.2}px,${curY*.3}px) rotate(-30deg)`;
+    activeCard.style.opacity="0";
+  }
+  cursor++;
+  setTimeout(()=>{
+    renderProgress();
+    if(cursor<deck.length){renderStack()}
+    else{showResult()}
+  },300);
+}
+
+function showResult(){
+  $("#game").classList.remove("show");
+  // Count likes per city
+  const scores={sh:0,tw:0,jp:0,bj:0};
+  liked.forEach(c=>scores[c.city]++);
+  const total=liked.length||1;
+  const ranked=ORDER.map(k=>({k,s:scores[k],p:Math.round(scores[k]/3*100)})).sort((a,b)=>b.s-a.s);
+  const win=CITIES[ranked[0].k];
+  const gap=ranked[0].s-ranked[1].s;
+
+  $("#resCity").textContent=win.name;
+  $("#resCity").style.color=win.color;
+  $("#resTheme").textContent=win.theme;
+  $("#resQuote").textContent="「"+win.quote+"」";
+  $("#resQuote").style.borderColor=win.color;
+
+  $("#resBars").innerHTML=ranked.map(r=>{
+    const c=CITIES[r.k];
+    const w=Math.round(r.s/3*100);
+    return `<div class="bar-row">
+      <div class="nm" style="color:${c.color}">${c.name}</div>
+      <div class="track"><div class="fill" data-w="${w}" style="background:${c.color}"></div></div>
+      <div class="pct">${w}%</div>
+    </div>`;
+  }).join("");
+
+  $("#resMem").innerHTML=liked.slice(0,6).map(c=>`<span class="mem-chip">${c.memory}</span>`).join("");
+
+  $("#result").classList.add("show");
+  requestAnimationFrame(()=>{
+    document.querySelectorAll(".fill").forEach(f=>f.style.width=f.dataset.w+"%");
+  });
+}
+
+// Events
+$("#startBtn").onclick=()=>{
+  $("#intro").classList.add("hide");
+  $("#game").classList.add("show");
+  $("#result").classList.remove("show");
+  init();
+};
+$("#likeBtn").onclick=()=>swipe("like");
+$("#nopeBtn").onclick=()=>swipe("nope");
+$("#againBtn").onclick=()=>{
+  $("#result").classList.remove("show");
+  $("#game").classList.add("show");
+  init();
+};
+$("#shareBtn").onclick=()=>{
+  const scores={sh:0,tw:0,jp:0,bj:0};
+  liked.forEach(c=>scores[c.city]++);
+  const ranked=ORDER.map(k=>({k,s:scores[k]})).sort((a,b)=>b.s-a.s);
+  const win=CITIES[ranked[0].k];
+  const txt=`我玩完「滑出你嘅城市」\n結果：${win.name} — ${win.theme}\n「${win.quote}」`;
+  if(navigator.share)navigator.share({title:"我嘅城市",text:txt}).catch(()=>{});
+  else if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>{
+    $("#shareBtn").textContent="已複製";
+  }).catch(()=>{});
+};
+
+// Keyboard
+document.addEventListener("keydown",e=>{
+  if($("#game").classList.contains("show")){
+    if(e.key==="ArrowRight")swipe("like");
+    if(e.key==="ArrowLeft")swipe("nope");
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>四城物語</title>
+<style>
+  :root{
+    --bg:#0A0B0F;
+    --panel:#14161D;
+    --panel2:#1C1F28;
+    --line:#2A2D38;
+    --ink:#EDE8DF;
+    --dim:#8A8274;
+    --sh:#D9A24D;
+    --tw:#E2654E;
+    --jp:#6E9BD8;
+    --bj:#C8435C;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidden}
+  #app{width:100%;height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;position:relative}
+
+  /* === TITLE === */
+  #title{position:absolute;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px;transition:opacity .5s}
+  #title.hide{opacity:0;pointer-events:none}
+  #title h1{font-family:var(--serif);font-size:42px;font-weight:700;line-height:1.2;text-align:center;margin-bottom:12px}
+  #title h1 .em{color:var(--sh)}
+  #title .sub{color:var(--dim);font-size:15px;line-height:1.8;text-align:center;max-width:280px;margin-bottom:48px}
+  #title .cities{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:320px}
+  .city-card{padding:20px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--panel);cursor:pointer;transition:transform .15s,border-color .2s;text-align:center}
+  .city-card:active{transform:scale(.96)}
+  .city-card .icon{font-size:32px;margin-bottom:8px}
+  .city-card .name{font-family:var(--serif);font-size:20px;font-weight:600;margin-bottom:4px}
+  .city-card .genre{font-size:12px;color:var(--dim)}
+  .city-card.sh:hover{border-color:var(--sh)}
+  .city-card.tw:hover{border-color:var(--tw)}
+  .city-card.jp:hover{border-color:var(--jp)}
+  .city-card.bj:hover{border-color:var(--bj)}
+
+  /* === STORY === */
+  #story{flex:1;display:flex;flex-direction:column;opacity:0;transition:opacity .4s;pointer-events:none;overflow:hidden}
+  #story.show{opacity:1;pointer-events:auto}
+
+  #story-header{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  #story-header .chapter{font-size:12px;letter-spacing:.2em;color:var(--dim)}
+  #story-header .city-tag{font-size:12px;padding:4px 10px;border-radius:6px;background:var(--panel2)}
+
+  #story-body{flex:1;overflow-y:auto;padding:24px 20px;-webkit-overflow-scrolling:touch}
+  #story-body::-webkit-scrollbar{width:3px}
+  #story-body::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
+
+  .scene{margin-bottom:24px;animation:fadeIn .5s ease both}
+  .scene-title{font-family:var(--serif);font-size:22px;font-weight:600;margin-bottom:16px;line-height:1.3}
+  .scene-text{font-size:16px;line-height:1.85;color:#D4CEC4;margin-bottom:20px;white-space:pre-line}
+  .scene-text .highlight{color:var(--ink);font-weight:600}
+  .scene-text .dialogue{color:var(--sh);font-style:italic}
+
+  .choices{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+  .choice{
+    padding:16px 18px;border-radius:12px;border:1.5px solid var(--line);
+    background:var(--panel);color:var(--ink);font-size:15px;line-height:1.5;
+    cursor:pointer;transition:border-color .2s,background .2s;text-align:left;
+    font-family:var(--sans);
+  }
+  .choice:hover{border-color:#3C4353;background:var(--panel2)}
+  .choice:active{transform:scale(.98)}
+  .choice .key{display:inline-block;width:24px;height:24px;border-radius:6px;background:#242935;color:var(--dim);font-size:12px;font-weight:600;text-align:center;line-height:24px;margin-right:10px}
+  .choice .hint{display:block;font-size:12px;color:var(--dim);margin-top:4px;margin-left:34px}
+
+  /* === ENDING === */
+  #ending{position:absolute;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px;opacity:0;pointer-events:none;transition:opacity .5s}
+  #ending.show{opacity:1;pointer-events:auto}
+  #ending .kicker{font-size:11px;letter-spacing:.3em;color:var(--dim);margin-bottom:12px}
+  #ending .ending-title{font-family:var(--serif);font-size:32px;font-weight:700;margin-bottom:16px;text-align:center;line-height:1.3}
+  #ending .ending-text{font-size:16px;line-height:1.85;color:#D4CEC4;text-align:center;max-width:320px;margin-bottom:32px;white-space:pre-line}
+  #ending .stats{display:flex;gap:16px;margin-bottom:32px}
+  #ending .stat{text-align:center}
+  #ending .stat .val{font-family:var(--serif);font-size:28px;font-weight:700}
+  #ending .stat .label{font-size:11px;color:var(--dim);margin-top:4px}
+  #ending .actions{display:flex;gap:12px}
+  #ending .btn{padding:14px 28px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--sans);border:1.5px solid var(--line);background:transparent;color:var(--ink)}
+  #ending .btn.primary{background:var(--ink);color:#111;border-color:var(--ink)}
+
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  .city-sh{--accent:var(--sh)}
+  .city-tw{--accent:var(--tw)}
+  .city-jp{--accent:var(--jp)}
+  .city-bj{--accent:var(--bj)}
+
+  .memory-flash{position:absolute;inset:0;z-index:70;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+  .memory-flash.show{opacity:1;pointer-events:auto}
+  .memory-flash .content{text-align:center;padding:40px}
+  .memory-flash .icon{font-size:48px;margin-bottom:16px}
+  .memory-flash .text{font-family:var(--serif);font-size:20px;color:var(--ink);line-height:1.6}
+  .memory-flash .sub{font-size:14px;color:var(--dim);margin-top:12px}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TITLE -->
+  <div id="title">
+    <h1>四城<span class="em">物語</span></h1>
+    <div class="sub">一張機票，四個城市，四種人生。<br>你嘅選擇，決定你嘅結局。</div>
+    <div class="cities">
+      <div class="city-card sh" data-city="sh">
+        <div class="icon">🕵️</div>
+        <div class="name">上海</div>
+        <div class="genre">偵探懸疑</div>
+      </div>
+      <div class="city-card tw" data-city="tw">
+        <div class="icon">🌙</div>
+        <div class="name">台灣</div>
+        <div class="genre">治癒系</div>
+      </div>
+      <div class="city-card jp" data-city="jp">
+        <div class="icon">⛩️</div>
+        <div class="name">日本</div>
+        <div class="genre">時空穿越</div>
+      </div>
+      <div class="city-card bj" data-city="bj">
+        <div class="icon">🏰</div>
+        <div class="name">北京</div>
+        <div class="genre">冒險尋寶</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORY -->
+  <div id="story">
+    <div id="story-header">
+      <div class="chapter" id="chapterLabel">CHAPTER 1</div>
+      <div class="city-tag" id="cityTag"></div>
+    </div>
+    <div id="story-body"></div>
+  </div>
+
+  <!-- MEMORY FLASH -->
+  <div class="memory-flash" id="memoryFlash">
+    <div class="content">
+      <div class="icon" id="memIcon"></div>
+      <div class="text" id="memText"></div>
+      <div class="sub" id="memSub"></div>
+    </div>
+  </div>
+
+  <!-- ENDING -->
+  <div id="ending">
+    <div class="kicker">你嘅結局</div>
+    <div class="ending-title" id="endTitle"></div>
+    <div class="ending-text" id="endText"></div>
+    <div class="stats">
+      <div class="stat"><div class="val" id="statChoices">0</div><div class="label">選擇</div></div>
+      <div class="stat"><div class="val" id="statMemories">0</div><div class="label">記憶</div></div>
+      <div class="stat"><div class="val" id="statTime">0:00</div><div class="label">時間</div></div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="restartBtn">再玩</button>
+      <button class="btn primary" id="shareBtn">Share</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============ STORY DATA ============
+const STORIES = {
+  sh: {
+    name:"上海", genre:"偵探懸疑", color:"#D9A24D", icon:"🕵️",
+    chapters: [
+      {
+        title:"第一章：失蹤的畫家",
+        text:`你係私家偵探陳默。今日係十二月三日，上海落住細雨。
+
+一個女人走進你嘅事務所，佢老公——著名畫家林志遠——已經失蹤咗三日。
+
+「佢最後出現嘅地方，係武康路一間咖啡店。」女人遞上一張相，「佢話要去搵『城市嘅記憶』，之後就冇再返嚟。」
+
+你望住張相。相中嘅男人企喺武康大樓前面，手裏揸住一幅未完成嘅畫。`,
+        choices:[
+          {text:"去武康路咖啡店調查",hint:"線索可能在現場",next:"cafe"},
+          {text:"先查林志遠嘅背景",hint:"了解失蹤者",next:"background"}
+        ]
+      }
+    ],
+    scenes:{
+      cafe:{
+        title:"武康路 · 咖啡店",
+        text:`咖啡店老闆記得林志遠。
+
+「佢成日坐喺窗邊，畫對面嘅洋房。但係前幾日，佢突然問我：『你知唔知呢棟樓以前係邊個住？』」
+
+老闆遞俾你一張紙巾，上面有一幅速寫——畫嘅係一棟洋房，門牌號碼寫住「武康路 113 號」。
+
+「佢走嘅時候，唔記得攞走呢張紙巾。」`,
+        choices:[
+          {text:"去武康路 113 號",next:"mansion"},
+          {text:"問老闆仲有冇其他線索",next:"more_info"}
+        ]
+      },
+      background:{
+        title:"背景調查",
+        text:`你翻查資料，發現林志遠最近沉迷研究上海嘅歷史建築。
+
+佢嘅最後一篇文章寫道：
+
+「每棟老洋房都係一個時間膠囊。武康路 113 號，曾經係一位法國外交官嘅故居，佢喺 1949 年離開上海時，留低咗一幅畫……」
+
+文章到呢度就斷咗。`,
+        choices:[
+          {text:"去武康路 113 號",next:"mansion"},
+          {text:"去咖啡店搵更多線索",next:"cafe"}
+        ]
+      },
+      more_info:{
+        title:"更多線索",
+        text:`老闆諗咗一陣。
+
+「對了，佢走之前，同一個著紅色外套嘅女人講咗好耐嘢。嗰個女人……我覺得似係對面洋房嘅管家。」
+
+你望出窗外。對面就係武康路 113 號。`,
+        choices:[
+          {text:"去武康路 113 號",next:"mansion"}
+        ]
+      },
+      mansion:{
+        title:"第二章：老洋房的秘密",
+        text:`武康路 113 號，一棟三層高嘅法式洋房。
+
+你按咗門鈴。開門嘅係一個著紅色外套嘅女人——正係咖啡店老闆講嘅嗰個管家。
+
+「你係嚟搵林先生嘅？」佢似乎唔意外，「佢喺二樓書房。但係……佢唔係好舒服。」
+
+你行上二樓，推開書房門。林志遠坐喺書桌前面，面前擺住一幅畫——正係相中嗰幅未完成嘅畫。
+
+「你終於嚟咗。」佢抬起頭，「我搵到咗。」`,
+        choices:[
+          {text:"問佢搵到咩",next:"found"},
+          {text:"問佢點解唔返屋企",next:"why"}
+        ]
+      },
+      found:{
+        title:"城市嘅記憶",
+        text:`林志遠指住幅畫。
+
+「呢幅畫，係 1949 年嗰位法國外交官畫嘅。佢畫嘅係當時嘅上海——外灘、洋房、街道。」
+
+佢停咗一陣。
+
+「但係最神奇嘅係，畫入面有一個人，個樣同我一模一樣。」
+
+你望住幅畫。畫中嘅男人，真係同林志遠有九分相似。
+
+「我覺得……我係佢嘅轉世。」林志遠細聲講，「所以我先咁鍾意畫上海。」`,
+        choices:[
+          {text:"相信佢，呢個係緣分",next:"ending_believe"},
+          {text:"懷疑佢，可能係太投入",next:"ending_doubt"}
+        ]
+      },
+      why:{
+        title:"點解唔返屋企",
+        text:`林志遠苦笑。
+
+「我唔敢返去。我一返去，就會變返嗰個日日趕稿、冇時間諗嘢嘅林志遠。」
+
+佢望住窗外嘅武康路。
+
+「喺度，我可以慢慢畫，慢慢諗。我終於明白，點解嗰位法國外交官要留低呢幅畫——佢想話俾後人知，上海嘅美，係值得用一生去記錄。」
+
+你望住佢，突然明白咗啲嘢。`,
+        choices:[
+          {text:"勸佢返屋企，但繼續畫",next:"ending_home"},
+          {text:"支持佢留喺度",next:"ending_stay"}
+        ]
+      },
+      ending_believe:{
+        title:"結局：時間嘅迴響",
+        text:`你選擇相信林志遠。
+
+或者真係有轉世，或者只係巧合。但係有一樣嘢係肯定嘅——上海嘅美，穿越咗七十年，仍然感動緊人。
+
+你離開洋房嘅時候，雨停咗。陽光灑喺武康路嘅梧桐樹上，你突然覺得，呢個城市嘅每一條街道，都有佢嘅故事。
+
+你決定，下次再嚟上海，唔係為咗查案，係為咗慢慢行，慢慢感受。
+
+【你獲得記憶：武康路嘅樹影】`,
+        ending:true
+      },
+      ending_doubt:{
+        title:"結局：現實與幻想",
+        text:`你覺得林志遠只係太投入。
+
+但係當你離開洋房，行喺武康路上，你開始懷疑自己。
+
+呢個城市嘅每一棟建築，都有佢嘅歷史。每一條街道，都有無數人嘅故事。或者，林志遠只係其中一個被呢個城市迷住嘅人。
+
+你決定，下次再嚟上海，要帶埋相機，記錄低呢個城市嘅每一個角落。
+
+【你獲得記憶：洋房嘅秘密】`,
+        ending:true
+      },
+      ending_home:{
+        title:"結局：返屋企",
+        text:`你勸林志遠返屋企。
+
+「你可以繼續畫，但係都要照顧屋企人。」
+
+佢諗咗好耐，最後點頭。
+
+你陪佢行出事務所，佢老婆喺門口等緊。兩個人相擁，你默默離開。
+
+行喺武康路上，你突然明白，上海嘅美，唔單止在於建築，更在於人呢度嘅生活。
+
+【你獲得記憶：梧桐樹下嘅擁抱】`,
+        ending:true
+      },
+      ending_stay:{
+        title:"結局：留低",
+        text:`你支持林志遠留喺度。
+
+「每個人都有自己嘅生活方式。你揀咗畫畫，就係你嘅選擇。」
+
+佢感激地望住你。
+
+你離開洋房，行喺武康路上。陽光透過梧桐樹嘅葉，灑喺你身上。
+
+你突然覺得，上海嘅美，在於佢包容每一個人嘅夢想。
+
+【你獲得記憶：追夢嘅勇氣】`,
+        ending:true
+      }
+    }
+  },
+
+  tw: {
+    name:"台灣", genre:"治癒系", color:"#E2654E", icon:"🌙",
+    chapters: [
+      {
+        title:"第一章：出走",
+        text:`你剛失戀。三日冇出過房門。
+
+朋友阿明打嚟：「喂，我幫你訂咗機票，聽日飛台北。你唔好問，去就係。」
+
+你想拒絕，但係望住房間入面嘅相——你同前任嘅合照——你突然覺得，係時候離開。
+
+第二日，你企喺桃園機場。台北嘅空氣，有種陌生嘅溫暖。`,
+        choices:[
+          {text:"去寧夏夜市食嘢",hint:"用食物治癒",next:"nightmarket"},
+          {text:"去北投浸溫泉",hint:"用溫泉放鬆",next:"hotspring"}
+        ]
+      }
+    ],
+    scenes:{
+      nightmarket:{
+        title:"寧夏夜市",
+        text:`夜晚九點，寧夏夜市人山人海。
+
+你企喺一間和牛燒肉店前面，猶豫緊入唔入去。一個阿婆行過，望住你。
+
+「少年人，一個人食飯啊？入去啦，呢間好好食。」
+
+你入去，坐低。老闆係一個中年男人，笑容好親切。
+
+「第一次嚟？我幫你配。」
+
+十分鐘後，一盤和牛擺喺你面前。油脂喺燈光下閃閃發光。`,
+        choices:[
+          {text:"慢慢食，享受呢一刻",next:"enjoy_food"},
+          {text:"同老闆傾偈",next:"talk_boss"}
+        ]
+      },
+      hotspring:{
+        title:"北投溫泉",
+        text:`你揸住毛巾，行入溫泉旅館。
+
+熱氣蒸騰，你慢慢浸落去。溫泉嘅熱力，由腳底慢慢升上嚟，你覺得成個人鬆晒。
+
+隔籬有一個阿伯，閉住眼，好享受。
+
+「少年人，第一次嚟北投？」阿伯突然開口。
+
+你點頭。
+
+「北投嘅溫泉，可以洗去煩惱。」阿伯笑住講，「我每個禮拜都嚟，浸完，咩煩惱都冇晒。」`,
+        choices:[
+          {text:"同阿伯傾偈",next:"talk_uncle"},
+          {text:"閉眼享受，乜都唔諗",next:"relax"}
+        ]
+      },
+      enjoy_food:{
+        title:"和牛嘅滋味",
+        text:`你夾起一塊和牛，放入口。
+
+油脂喺口中融化，牛肉嘅香味充滿成個口腔。你突然覺得，呢一刻，咩煩惱都唔重要。
+
+老闆行過嚟：「好食嗎？」
+
+你點頭，眼淚突然流出嚟。
+
+「點解喊？」老闆問。
+
+「因為……我好久冇試過，咁專心食一餐飯。」
+
+老闆拍拍你嘅肩：「食飯，就係要專心。人生，都係。」`,
+        choices:[
+          {text:"繼續食，食到飽",next:"ending_food"}
+        ]
+      },
+      talk_boss:{
+        title:"老闆嘅故事",
+        text:`老闆坐低，同你傾偈。
+
+「我開呢間店，已經二十年。好多人嚟食，有開心嘅，有唔開心嘅。」
+
+佢望住你。
+
+「我見過好多人，食完一餐飯，就笑返。食物，有種魔力。」
+
+你問：「你點解咁鍾意開餐廳？」
+
+老闆笑：「因為我鍾意睇人食得開心。你開心，我就開心。」`,
+        choices:[
+          {text:"多謝老闆，繼續食",next:"ending_talk"}
+        ]
+      },
+      talk_uncle:{
+        title:"阿伯嘅智慧",
+        text:`阿伯同你講咗好多北投嘅歷史。
+
+「北投嘅溫泉，已經有幾百年歷史。以前嘅人，都係嚟呢度浸溫泉，洗去一身疲勞。」
+
+佢望住你。
+
+「你後生，有咩煩惱，浸完溫泉，就會諗通。」
+
+你問：「如果真係諗唔通呢？」
+
+阿伯笑：「咁就再浸多次。溫泉，永遠都喺度等你。」`,
+        choices:[
+          {text:"多謝阿伯，繼續浸",next:"ending_uncle"}
+        ]
+      },
+      relax:{
+        title:"放鬆",
+        text:`你閉上眼，乜都唔諗。
+
+溫泉嘅熱力，慢慢滲入你嘅身體。你覺得，自己好似浮喺雲上面。
+
+時間，好似停咗。
+
+當你再次睜開眼，已經過咗一個鐘。你覺得，成個人輕鬆晒。
+
+你離開溫泉，行喺北投嘅街道上。夜晚嘅北投，好靜，好舒服。`,
+        choices:[
+          {text:"去夜市食宵夜",next:"nightmarket"},
+          {text:"返酒店休息",next:"ending_relax"}
+        ]
+      },
+      ending_food:{
+        title:"結局：食物嘅治癒",
+        text:`你食到好飽，心滿意足。
+
+離開夜市嘅時候，你回頭望一眼。燈火通明，人聲鼎沸。
+
+你突然明白，治癒，唔一定要做咩大事。有時，一餐好食嘅飯，已經足夠。
+
+你決定，聽日再嚟。
+
+【你獲得記憶：凌晨三點嘅和牛燒肉】`,
+        ending:true
+      },
+      ending_talk:{
+        title:"結局：人與人之間",
+        text:`你同老闆傾到好夜。
+
+離開嘅時候，老闆送你到店門口。
+
+「下次再嚟，我請你食。」
+
+你點頭，心裏面暖暖地。
+
+你突然明白，台灣嘅美，唔單止在於食物，更在於人。
+
+【你獲得記憶：夜市嘅人情味】`,
+        ending:true
+      },
+      ending_uncle:{
+        title:"結局：溫泉嘅智慧",
+        text:`你浸到皮膚皺晒，先至離開溫泉。
+
+阿伯已經走咗，但係佢嘅說話，留喺你心裏面。
+
+「溫泉，永遠都喺度等你。」
+
+你突然明白，有啲嘢，唔會因為你唔開心而消失。佢哋會一直喺度，等你返嚟。
+
+你決定，下次再嚟北投。
+
+【你獲得記憶：北投溫泉嘅溫暖】`,
+        ending:true
+      },
+      ending_relax:{
+        title:"結局：休息",
+        text:`你返到酒店，沖個涼，瞓喺床上面。
+
+你覺得，自己好似重新充電。
+
+你攞起手機，刪除咗前任嘅相。
+
+然後，你瞓著咗。發咗一個好長嘅夢，夢入面，你喺台灣嘅街道上，笑得好開心。
+
+【你獲得記憶：重新開始嘅勇氣】`,
+        ending:true
+      }
+    }
+  },
+
+  jp: {
+    name:"日本", genre:"時空穿越", color:"#6E9BD8", icon:"⛩️",
+    chapters: [
+      {
+        title:"第一章：古物",
+        text:`你喺京都清水寺嘅一間古董店，見到一個古老嘅鏡子。
+
+店主係一個白髮老人，佢望住你，眼神好深邃。
+
+「呢面鏡子，可以照見過去。」老人講，「但係，一旦照咗，就返唔到轉頭。」
+
+你猶豫。但你嘅好奇心，戰勝咗恐懼。
+
+你拿起鏡子，照向自己。
+
+一陣強光閃過，你失去知覺。`,
+        choices:[
+          {text:"睜開眼，睇下自己去咗邊",next:"wake"}
+        ]
+      }
+    ],
+    scenes:{
+      wake:{
+        title:"第二章：江戶時代",
+        text:`你睜開眼，發現自己企喺一條古老嘅街道上。
+
+周圍嘅人，著住和服，行路嘅姿態，同現代完全唔同。
+
+你低頭望自己——你都著住和服。
+
+「呢度係……江戶時代？」你喃喃自語。
+
+一個武士行過，望住你。
+
+「你係邊個？點解企喺度？」`,
+        choices:[
+          {text:"話自己係旅人",next:"traveler"},
+          {text:"問武士而家係咩年份",next:"year"}
+        ]
+      },
+      traveler:{
+        title:"旅人",
+        text:`你話自己係旅人，嚟自遠方。
+
+武士望住你，似乎唔完全相信，但係冇再追問。
+
+「如果你係旅人，應該去清水寺參拜。」武士指住遠方，「嗰度係京都最靈驗嘅地方。」
+
+你多謝武士，向清水寺行去。
+
+一路上，你見到好多古老嘅建築，同現代嘅京都，完全唔同。`,
+        choices:[
+          {text:"去清水寺",next:"temple"}
+        ]
+      },
+      year:{
+        title:"年份",
+        text:`武士話，而家係寬永十二年——即係 1635 年。
+
+你心裏面震驚。你竟然穿越咗四百幾年。
+
+武士見你面色有異，問：「你冇嘢嘛？」
+
+你搖頭，話自己冇事。
+
+「如果你冇地方去，可以去清水寺。」武士建議，「嗰度嘅住持，係一個智者，或者可以幫到你。」`,
+        choices:[
+          {text:"去清水寺",next:"temple"}
+        ]
+      },
+      temple:{
+        title:"第三章：清水寺嘅住持",
+        text:`你行到清水寺，見到住持。
+
+住持係一個老和尚，眼神好慈祥。
+
+「你嚟自未來？」住持突然問。
+
+你震驚，點頭。
+
+「我知。」住持微笑，「因為我都係。」
+
+你更加震驚。
+
+「呢面鏡子，係一個時空之門。」住持解釋，「每隔一百年，就會有一個人，通過鏡子嚟到呢度。」`,
+        choices:[
+          {text:"問住持點樣返去",next:"return"},
+          {text:"問住持點解會喺度",next:"why_here"}
+        ]
+      },
+      return:{
+        title:"返去嘅方法",
+        text:`住持話，要返去，必須喺月圓之夜，喺清水寺嘅舞台，再次照鏡子。
+
+「但係，返去之前，你要完成一個任務。」住持講。
+
+「咩任務？」你問。
+
+「你要喺呢個時代，留下一個記憶。」住持講，「一個屬於你，亦屬於呢個時代嘅記憶。」
+
+你唔明。
+
+「去體驗呢個時代嘅生活，去感受呢個時代嘅美。」住持講，「當你真正感受到，你就可以返去。」`,
+        choices:[
+          {text:"去體驗江戶時代嘅生活",next:"experience"}
+        ]
+      },
+      why_here:{
+        title:"住持嘅故事",
+        text:`住持話，佢都係嚟自未來——嚟自 1920 年。
+
+「我嚟到呢度，已經五十年。我選擇留低，因為我鍾意呢個時代。」
+
+你問：「你唔想返去？」
+
+住持搖頭。
+
+「每個時代，都有佢嘅美。我選擇留喺度，因為我搵到屬於我嘅地方。」
+
+你突然明白，返唔返去，唔係最重要。最重要嘅係，你喺呢個時代，搵到咩。`,
+        choices:[
+          {text:"去體驗江戶時代嘅生活",next:"experience"}
+        ]
+      },
+      experience:{
+        title:"第四章：體驗",
+        text:`你喺江戶時代，過咗三日。
+
+你學識著和服，學識用筷子，學識欣賞茶道。
+
+你見到好多現代冇嘅嘢——真正嘅寧靜，真正嘅慢活。
+
+你開始明白，住持講嘅「記憶」，係咩意思。
+
+第三日夜晚，月圓。你企喺清水寺嘅舞台，拿起鏡子。
+
+你猶豫。你真想返去？`,
+        choices:[
+          {text:"返去現代",next:"ending_return"},
+          {text:"留喺江戶時代",next:"ending_stay"}
+        ]
+      },
+      ending_return:{
+        title:"結局：返去",
+        text:`你選擇返去。
+
+一陣強光閃過，你返到現代嘅京都。
+
+你企喺清水寺嘅舞台，望住腳下嘅城市。現代嘅京都，燈火通明，同江戶時代完全唔同。
+
+但係，你心裏面，留低咗一個記憶——一個屬於江戶時代嘅記憶。
+
+你決定，下次再嚟京都，要帶住呢個記憶，慢慢行，慢慢感受。
+
+【你獲得記憶：清水寺嘅月圓之夜】`,
+        ending:true
+      },
+      ending_stay:{
+        title:"結局：留低",
+        text:`你選擇留低。
+
+你放低鏡子，向住持微笑。
+
+住持點頭，似乎早就知道。
+
+你喺江戶時代，過咗一生。你成為一個茶道大師，教導後生，傳承文化。
+
+你臨死嘅時候，望住窗外嘅月光，心裏面冇遺憾。
+
+因為你搵到，屬於你嘅時代。
+
+【你獲得記憶：江戶時代嘅寧靜】`,
+        ending:true
+      }
+    }
+  },
+
+  bj: {
+    name:"北京", genre:"冒險尋寶", color:"#C8435C", icon:"🏰",
+    chapters: [
+      {
+        title:"第一章：傳說",
+        text:`你係探險家李風。你收到一封神秘信件，入面有一張地圖，同一句话：
+
+「城市之心，藏喺北京嘅心臟。搵到佢，你就會明白，咩係真正嘅寶藏。」
+
+你決定，去北京，尋找呢個傳說中嘅「城市之心」。
+
+你企喺故宮嘅午門前面，望住呢座古老嘅宮殿。你嘅冒險，由呢度開始。`,
+        choices:[
+          {text:"入故宮，開始尋找",next:"forbidden"},
+          {text:"先去泡泡瑪特城市樂園",hint:"地圖上有標記",next:"popmart"}
+        ]
+      }
+    ],
+    scenes:{
+      forbidden:{
+        title:"故宮嘅線索",
+        text:`你行入故宮，按照地圖嘅指示，嚟到太和殿。
+
+地圖上寫住：「龍椅之下，藏有線索。」
+
+你趁冇人注意，蹲低，望住龍椅嘅底部。
+
+你見到一個暗格，入面有一張紙條：
+
+「城市之心，唔在於金銀珠寶，而在於人呢度嘅記憶。去泡泡瑪特城市樂園，你會搵到答案。」`,
+        choices:[
+          {text:"去泡泡瑪特城市樂園",next:"popmart"}
+        ]
+      },
+      popmart:{
+        title:"第二章：MOLLY 城堡",
+        text:`你嚟到泡泡瑪特城市樂園。
+
+眼前係一座巨大嘅 MOLLY 城堡，色彩繽紛，同故宮嘅莊嚴，形成強烈對比。
+
+你行入城堡，見到好多 MOLLY 公仔。每一個公仔，都有唔同嘅表情，唔同嘅故事。
+
+一個工作人員行過嚟。
+
+「你係嚟搵城市之心嘅？」佢問。
+
+你點頭。
+
+「城市之心，就喺呢度。」工作人員指住你嘅心口，「但你唔明。」`,
+        choices:[
+          {text:"問佢咩意思",next:"meaning"},
+          {text:"繼續喺樂園探索",next:"explore"}
+        ]
+      },
+      meaning:{
+        title:"城市之心嘅意義",
+        text:`工作人員解釋：
+
+「城市之心，唔係一個實物，係一種感覺。當你喺呢個城市，搵到快樂，搵到感動，你就搵到城市之心。」
+
+你望住周圍嘅 MOLLY 公仔，突然明白。
+
+「所以，城市之心，就係人呢度嘅記憶？」
+
+工作人員點頭。
+
+「每個人嚟到北京，都會留低一個記憶。呢啲記憶，就係城市之心。」`,
+        choices:[
+          {text:"你搵到城市之心",next:"ending_found"}
+        ]
+      },
+      explore:{
+        title:"樂園探索",
+        text:`你喺樂園入面，玩咗好多設施。
+
+你見到好多小朋友，笑得好開心。你見到好多情侶，影相留念。你見到好多家庭，一齊玩。
+
+你突然明白，城市之心，就係呢啲笑容，呢啲記憶。
+
+你搵到城市之心。`,
+        choices:[
+          {text:"結束冒險",next:"ending_found"}
+        ]
+      },
+      ending_found:{
+        title:"結局：真正嘅寶藏",
+        text:`你搵到城市之心。
+
+但係，你冇拎走任何嘢。因為城市之心，唔係可以拎走嘅寶藏，係一種感覺，一種記憶。
+
+你離開樂園，行喺北京嘅街道上。你望住周圍嘅人，每一個人，都有佢哋嘅故事，佢哋嘅記憶。
+
+你突然明白，北京嘅美，唔在於故宮嘅莊嚴，唔在於長城嘅壯觀，而在於人呢度嘅生活。
+
+你決定，下次再嚟北京，要帶住呢個感覺，慢慢行，慢慢感受。
+
+【你獲得記憶：MOLLY 城堡嘅笑容】`,
+        ending:true
+      }
+    }
+  }
+};
+
+// ============ GAME ENGINE ============
+let currentCity=null, currentScene=null, choicesMade=0, memories=[], startTime=0;
+const $=s=>document.querySelector(s);
+
+function startGame(city){
+  currentCity=city;
+  choicesMade=0;
+  memories=[];
+  startTime=Date.now();
+  const story=STORIES[city];
+  $("#title").classList.add("hide");
+  $("#story").classList.add("show");
+  $("#cityTag").textContent=story.name+" · "+story.genre;
+  $("#cityTag").style.color=story.color;
+  showScene("chapter_0");
+}
+
+function showScene(sceneId){
+  const story=STORIES[currentCity];
+  let scene;
+  if(sceneId==="chapter_0"){
+    scene=story.chapters[0];
+    $("#chapterLabel").textContent="CHAPTER 1";
+  }else{
+    scene=story.scenes[sceneId];
+    // Update chapter label based on scene
+    if(sceneId.includes("mansion")||sceneId.includes("temple")||sceneId.includes("popmart")){
+      $("#chapterLabel").textContent="CHAPTER 2";
+    }else if(sceneId.includes("experience")||sceneId.includes("explore")){
+      $("#chapterLabel").textContent="CHAPTER 3";
+    }
+  }
+  currentScene=scene;
+  const body=$("#story-body");
+  body.innerHTML=`
+    <div class="scene">
+      <div class="scene-title" style="color:${story.color}">${scene.title}</div>
+      <div class="scene-text">${scene.text}</div>
+      ${scene.choices?`<div class="choices">${scene.choices.map((c,i)=>`
+        <button class="choice" data-next="${c.next}" data-idx="${i}">
+          <span class="key">${"ABCD"[i]}</span>${c.text}
+          ${c.hint?`<span class="hint">${c.hint}</span>`:""}
+        </button>
+      `).join("")}</div>`:""}
+    </div>
+  `;
+  body.scrollTop=0;
+
+  // Bind choices
+  body.querySelectorAll(".choice").forEach(btn=>{
+    btn.onclick=()=>{
+      choicesMade++;
+      const next=btn.dataset.next;
+      const target=story.scenes[next];
+      if(target&&target.ending){
+        showEnding(target);
+      }else{
+        // Check if this is a memory moment
+        if(next.includes("ending")||next.includes("enjoy")||next.includes("relax")){
+          const memory=getMemory(currentCity,next);
+          if(memory){
+            memories.push(memory);
+            flashMemory(memory,()=>showScene(next));
+            return;
+          }
+        }
+        showScene(next);
+      }
+    };
+  });
+}
+
+function getMemory(city,sceneId){
+  const mems={
+    sh:{ending_believe:"武康路嘅樹影",ending_doubt:"洋房嘅秘密",ending_home:"梧桐樹下嘅擁抱",ending_stay:"追夢嘅勇氣"},
+    tw:{ending_food:"凌晨三點嘅和牛燒肉",ending_talk:"夜市嘅人情味",ending_uncle:"北投溫泉嘅溫暖",ending_relax:"重新開始嘅勇氣"},
+    jp:{ending_return:"清水寺嘅月圓之夜",ending_stay:"江戶時代嘅寧靜"},
+    bj:{ending_found:"MOLLY 城堡嘅笑容"}
+  };
+  return mems[city]?.[sceneId]||null;
+}
+
+function flashMemory(memory,callback){
+  const story=STORIES[currentCity];
+  $("#memIcon").textContent=story.icon;
+  $("#memText").textContent=memory;
+  $("#memSub").textContent="你獲得一段記憶";
+  $("#memoryFlash").classList.add("show");
+  setTimeout(()=>{
+    $("#memoryFlash").classList.remove("show");
+    if(callback)callback();
+  },2000);
+}
+
+function showEnding(scene){
+  const story=STORIES[currentCity];
+  const elapsed=Math.floor((Date.now()-startTime)/1000);
+  const mins=Math.floor(elapsed/60), secs=elapsed%60;
+
+  $("#story").classList.remove("show");
+  $("#ending").classList.add("show");
+  $("#endTitle").textContent=scene.title;
+  $("#endTitle").style.color=story.color;
+  $("#endText").textContent=scene.text;
+  $("#statChoices").textContent=choicesMade;
+  $("#statMemories").textContent=memories.length;
+  $("#statTime").textContent=`${mins}:${secs.toString().padStart(2,"0")}`;
+}
+
+// Events
+document.querySelectorAll(".city-card").forEach(card=>{
+  card.onclick=()=>startGame(card.dataset.city);
+});
+
+$("#restartBtn").onclick=()=>{
+  $("#ending").classList.remove("show");
+  $("#title").classList.remove("hide");
+};
+
+$("#shareBtn").onclick=()=>{
+  const story=STORIES[currentCity];
+  const txt=`我玩完「四城物語」\n城市：${story.name}\n結局：${$("#endTitle").textContent}\n記憶：${memories.join("、")}`;
+  if(navigator.share)navigator.share({title:"四城物語",text:txt}).catch(()=>{});
+  else if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>{
+    $("#shareBtn").textContent="已複製";
+  }).catch(()=>{});
+};
+
+// Keyboard
+document.addEventListener("keydown",e=>{
+  if($("#story").classList.contains("show")){
+    const choices=document.querySelectorAll(".choice");
+    const idx="abcd1234".indexOf(e.key.toLowerCase());
+    if(idx>=0&&idx<choices.length)choices[idx%choices.length].click();
+  }
+});
+</script>
+</body>
+</html>

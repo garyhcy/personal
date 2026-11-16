@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>轉機夜 · Gary & 琪琪</title>
+<style>
+  :root{
+    --bg:#080B14;
+    --ink:#F3EDE3;
+    --dim:#8B8578;
+    --line:#20242F;
+    --amber:#E0A458;
+    --sh:#D9A24D; --tw:#E2654E; --jp:#6E9BD8; --bj:#C8435C;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;background:var(--bg);color:var(--ink);font-family:"PingFang TC","Noto Sans TC",system-ui,-apple-system,sans-serif;overflow:hidden}
+  #app{width:100%;height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;position:relative;overflow:hidden}
+
+  /* progress */
+  #bar{position:absolute;top:0;left:0;right:0;height:2px;background:#151A24;z-index:30}
+  #barFill{height:100%;width:0;background:var(--amber);transition:width .5s ease}
+
+  /* stage */
+  #stage{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+  .art{position:relative;flex:0 0 42%;min-height:180px;overflow:hidden;transition:opacity .5s}
+  .art .glow{position:absolute;width:220px;height:220px;border-radius:50%;filter:blur(60px);opacity:.5}
+  .art .it{position:absolute;transform:translate(-50%,-50%);filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+
+  .panel{flex:1;overflow-y:auto;padding:22px 22px 26px;display:flex;flex-direction:column;-webkit-overflow-scrolling:touch}
+  .panel::-webkit-scrollbar{width:0}
+
+  .place{font-size:11px;letter-spacing:.24em;color:var(--dim);margin-bottom:10px}
+  .line{font-size:17px;line-height:1.85;color:#DED8CD;margin-bottom:20px}
+  .line b{color:var(--amber);font-weight:600}
+
+  .choices{display:flex;flex-direction:column;gap:10px;margin-top:auto}
+  .ch{
+    display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+    padding:16px 18px;border-radius:14px;border:1px solid var(--line);
+    background:#11151E;color:var(--ink);font-size:15px;line-height:1.5;
+    font-family:inherit;cursor:pointer;transition:.18s;
+  }
+  .ch:active{transform:scale(.985)}
+  .ch:hover{border-color:var(--amber);background:#151A25}
+  .ch .em{font-size:22px;flex:0 0 auto}
+  .ch.hit{border-color:var(--amber);background:rgba(224,164,88,.12)}
+  .ch.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:auto}
+  .cell{
+    aspect-ratio:1;border-radius:16px;border:1px solid var(--line);background:#11151E;
+    display:flex;align-items:center;justify-content:center;font-size:46px;cursor:pointer;transition:.18s;
+  }
+  .cell:hover{border-color:var(--amber);background:#151A25}
+  .cell.shake{animation:shake .4s}
+
+  .toast{
+    position:absolute;left:50%;bottom:26px;transform:translate(-50%,20px);
+    background:#1B2029;border:1px solid var(--line);color:var(--ink);
+    padding:10px 18px;border-radius:99px;font-size:13px;opacity:0;
+    transition:.3s;pointer-events:none;z-index:40;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* title */
+  #title{position:absolute;inset:0;z-index:50;background:radial-gradient(circle at 50% 30%,#16203A 0%,#080B14 65%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px;text-align:center;transition:opacity .6s}
+  #title.off{opacity:0;pointer-events:none}
+  #title .km{font-size:11px;letter-spacing:.3em;color:var(--dim);margin-bottom:22px}
+  #title h1{font-size:34px;line-height:1.35;font-weight:700;letter-spacing:.02em;margin-bottom:14px}
+  #title h1 span{color:var(--amber)}
+  #title .couple{font-size:14px;color:var(--dim);margin-bottom:36px;letter-spacing:.1em}
+  #title .btn{
+    padding:15px 44px;border-radius:99px;border:none;background:var(--amber);color:#0B0D14;
+    font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;
+  }
+  #title .btn:active{transform:scale(.96)}
+  #title .hint{margin-top:22px;font-size:12px;color:#5C5749;line-height:1.8}
+
+  /* ending */
+  #end{position:absolute;inset:0;z-index:45;background:var(--bg);overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .6s;padding:44px 24px}
+  #end.on{opacity:1;pointer-events:auto}
+  #end .kick{font-size:11px;letter-spacing:.3em;color:var(--dim);text-align:center;margin-bottom:18px}
+  #end .city{font-size:54px;font-weight:700;text-align:center;line-height:1.2;margin-bottom:10px;animation:up .6s both}
+  #end .theme{font-size:15px;color:#C4BCAE;text-align:center;margin-bottom:26px;animation:up .6s .08s both}
+  #end .reason{
+    border-left:2px solid var(--amber);padding:16px 18px;background:rgba(224,164,88,.06);
+    font-size:14.5px;line-height:1.95;color:#E2DCD1;margin-bottom:24px;white-space:pre-line;
+    animation:up .6s .16s both;
+  }
+  #end .sec{font-size:11px;letter-spacing:.2em;color:var(--dim);margin:0 0 12px}
+  #end .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px;animation:up .6s .24s both}
+  #end .chip{font-size:12px;padding:7px 13px;border-radius:9px;background:#131822;border:1px solid #232936;color:#C9C2B5}
+  #end .photo{height:120px;border-radius:14px;margin-bottom:26px;position:relative;overflow:hidden;animation:up .6s .28s both}
+  #end .acts{display:flex;gap:12px;animation:up .6s .32s both;padding-bottom:24px}
+  #end .acts button{flex:1;padding:14px;border-radius:12px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink)}
+  #end .acts button.p{background:var(--amber);color:#0B0D14;border-color:var(--amber)}
+  @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="bar"><div id="barFill"></div></div>
+
+  <div id="stage">
+    <div class="art" id="art"><div class="glow" id="glow"></div></div>
+    <div class="panel" id="panel"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div id="title">
+    <div class="km">A FOUR-DAY STORY</div>
+    <h1>轉機<span>夜</span></h1>
+    <div class="couple">Gary &nbsp;💕&nbsp; 琪琪</div>
+    <button class="btn" id="start">開始</button>
+    <div class="hint">大約 6 分鐘<br>裡面每個選擇都會記住</div>
+  </div>
+
+  <div id="end"></div>
+</div>
+
+<script>
+(function(){
+  var NAME1="Gary", NAME2="琪琪";
+
+  var CITIES={
+    sh:{n:"上海",t:"梧桐樹與外灘的都會浪漫",c:"#D9A24D",
+      r:"你揀嘅每一樣，都係「唔急」：\n落地玻璃前睇飛機、一人一邊耳機、攬住瞓一陣。\n你想要嘅係一個可以慢慢行、慢慢食、夜晚有燈嘅城市。"},
+    tw:{n:"台灣",t:"夜市煙火氣＋溫泉",c:"#E2654E",
+      r:"你嘅選擇全部指向同一件事：好食、熱鬧、唔使計劃。\n你想隻手拖住，行入去就有嘢食。\n你呢四日，唔需要一個行程表。"},
+    jp:{n:"日本",t:"關西紅葉尾＋燈飾＋和牛",c:"#6E9BD8",
+      r:"你揀咗雪、揀咗玻璃倒影、揀咗一人一邊耳機。\n你想要儀式感，想要一個連等飛機都值得記住嘅地方。\n你想要四日，過得好慢。"},
+    bj:{n:"北京",t:"皇城冬日＋潮玩 IP 朝聖",c:"#C8435C",
+      r:"你揀咗夾公仔、UNO 秘密、玩具店。\n你想要一個可以一齊癲、一齊笑到收唔到聲嘅城市。\n你想要四日，玩到攰為止。"}
+  };
+
+  var STEPS=[
+    {
+      type:"scene",
+      place:"候機大堂 · 晚上十點",
+      art:{bg:"linear-gradient(180deg,#0B1226 0%,#141A2E 60%,#0A0D18 100%)",glow:"#2E4A8A",
+        items:[{e:"🛫",s:88,x:66,y:42},{e:"🧳",s:46,x:26,y:66},{e:"🪟",s:34,x:80,y:74}]},
+      line:"螢幕上嘅紅字彈出嚟。<b>班機取消</b>。\n下一班，要等十二個鐘。\n琪琪望住你，行李仲喺手度。",
+      choices:[
+        {em:"🏨",t:"先搵間酒店，放低行李再算",w:{sh:3,jp:1},m:"你話：先放低行李"},
+        {em:"🍜",t:"出去機場外圍，搵間仲開嘅嘢食",w:{tw:3},m:"你話：肚餓大過天"},
+        {em:"🪟",t:"霸住落地玻璃前面嘅位，睇飛機",w:{jp:2,sh:1},m:"你霸住咗玻璃前嘅位"},
+        {em:"🎪",t:"去夾公仔機，玩返陣先",w:{bj:3,tw:1},m:"你拉咗琪琪去夾公仔"}
+      ]
+    },
+    {
+      type:"scene",
+      place:"候機大堂 · 凌晨一點",
+      art:{bg:"linear-gradient(180deg,#0A1020 0%,#181B2A 55%,#0A0C14 100%)",glow:"#5A4326",
+        items:[{e:"☕",s:52,x:30,y:58},{e:"🌙",s:40,x:74,y:30},{e:"🧣",s:34,x:60,y:76}]},
+      line:"機場好似一個小城市。\n琪琪打咗三個呵欠，但唔肯瞓。\n「我唔想錯過班機。」",
+      choices:[
+        {em:"☕",t:"買兩杯熱嘢，慢慢飲",w:{sh:2,jp:2},m:"兩杯熱飲，飲到凍"},
+        {em:"🍢",t:"去便利店掃一堆零食返嚟",w:{tw:3},m:"你哋掃咗成枱零食"},
+        {em:"🎧",t:"一人一邊耳機，聽同一首歌",w:{jp:3},m:"一人一邊耳機"},
+        {em:"🎲",t:"玩 UNO，輸咗要講一個秘密",w:{bj:3,tw:1},m:"UNO 輸咗講秘密"}
+      ]
+    },
+    {
+      type:"find",
+      place:"候機大堂 · 凌晨兩點",
+      line:"冷氣愈嚟愈大。\n琪琪縮埋一舊，望住你。\n<b>喺行李入面，搵件外套畀佢。</b>",
+      items:[{e:"🧥",ok:true},{e:"🩴"},{e:"🧴"},{e:"📚"}],
+      wrong:"唔係呢樣，再搵。",
+      mem:"你喺行李底搵到件外套"
+    },
+    {
+      type:"scene",
+      place:"落地玻璃前 · 凌晨三點",
+      art:{bg:"linear-gradient(180deg,#060A16 0%,#101A2E 50%,#070A12 100%)",glow:"#1E3A6E",
+        items:[{e:"✈️",s:54,x:72,y:38},{e:"🌌",s:36,x:24,y:26},{e:"💫",s:26,x:52,y:64}]},
+      line:"外面停機坪得幾盞燈。\n琪琪挨住你膊頭，忽然問：\n「如果唔使返工，你諗住去邊？」",
+      choices:[
+        {em:"🌃",t:"去一個夜晚都唔會靜嘅城市",w:{sh:3},m:"你話：要一個唔會靜嘅夜晚"},
+        {em:"🌊",t:"去一個有海、有溫泉嘅地方",w:{tw:3,jp:1},m:"你話：要有海同溫泉"},
+        {em:"🏔",t:"去一個會落雪嘅地方",w:{jp:3},m:"你話：想睇雪"},
+        {em:"🏯",t:"去一個有城牆、有故事嘅古城",w:{bj:3},m:"你話：想去古城"}
+      ]
+    },
+    {
+      type:"photo",
+      place:"觀景台 · 清晨五點半",
+      line:"天開始有少少光。\n琪琪話：「影張相。」\n<b>你會影邊個畫面？</b>",
+      items:[
+        {em:"🪟",t:"玻璃上面，你哋兩個嘅倒影",w:{sh:2},bg:"linear-gradient(160deg,#16203A,#3A2A18)",mem:"你影咗玻璃上嘅倒影"},
+        {em:"✈️",t:"停機坪上面，一架等緊嘅飛機",w:{jp:2},bg:"linear-gradient(160deg,#0E1730,#1B2E4E)",mem:"你影咗停機坪嘅飛機"},
+        {em:"☕",t:"枱上面，兩杯凍咗嘅咖啡",w:{tw:2},bg:"linear-gradient(160deg,#2A1E14,#4A3520)",mem:"你影咗兩杯凍咗嘅咖啡"}
+      ]
+    },
+    {
+      type:"scene",
+      place:"轉機櫃檯 · 上午八點",
+      art:{bg:"linear-gradient(180deg,#121A2C 0%,#1E2436 55%,#0B0E17 100%)",glow:"#8A6A2E",
+        items:[{e:"🛄",s:56,x:34,y:46},{e:"📋",s:40,x:66,y:64},{e:"🕗",s:34,x:78,y:26}]},
+      line:"地勤話：仲有三個鐘先有消息。\n琪琪拉住你隻手，唔出聲。",
+      choices:[
+        {em:"🍳",t:"搵間有熱食嘅餐廳，好好食餐早餐",w:{tw:3,sh:1},m:"你哋食咗餐好正式嘅早餐"},
+        {em:"🧸",t:"去玩具店，夾隻公仔送畀佢",w:{bj:3},m:"你夾咗隻公仔畀佢"},
+        {em:"🛋",t:"乜都唔做，攬住瞓一陣",w:{tw:2,jp:2},m:"你哋攬住喺椅上面瞓咗"},
+        {em:"🚶",t:"拖住手，由一號閘行到最尾",w:{sh:2,jp:2},m:"你哋行晒成個客運大樓"}
+      ]
+    },
+    {
+      type:"scene",
+      place:"登機口 · 上午九點",
+      art:{bg:"linear-gradient(180deg,#1A2234 0%,#2A3245 45%,#0D1119 100%)",glow:"#C08A3E",
+        items:[{e:"🚪",s:62,x:50,y:44},{e:"🎫",s:40,x:24,y:70},{e:"💛",s:30,x:76,y:66}]},
+      line:"廣播響起。\n琪琪捉實你隻手，問：\n「上機之前，你想同我講咩？」",
+      choices:[
+        {em:"🤍",t:"「呢四日，我咩都唔做，淨係陪你。」",w:{sh:2,jp:2},m:"你話：呢四日淨係陪佢"},
+        {em:"🍜",t:"「我哋食勻晒呢個城市。」",w:{tw:3},m:"你話：要食勻晒"},
+        {em:"✨",t:"「我哋去睇啲好靚嘅嘢。」",w:{jp:3},m:"你話：要睇好靚嘅嘢"},
+        {em:"🎢",t:"「我哋玩到攰為止。」",w:{bj:3},m:"你話：玩到攰為止"}
+      ]
+    }
+  ];
+
+  var idx=0, score={sh:0,tw:0,jp:0,bj:0}, mems=[], photo=null, locked=false;
+
+  var artEl=document.getElementById("art"),
+      glowEl=document.getElementById("glow"),
+      panel=document.getElementById("panel"),
+      barFill=document.getElementById("barFill"),
+      toastEl=document.getElementById("toast"),
+      endEl=document.getElementById("end");
+
+  function toast(msg){
+    toastEl.textContent=msg; toastEl.classList.add("show");
+    setTimeout(function(){toastEl.classList.remove("show");},1400);
+  }
+
+  function paintArt(cfg){
+    artEl.querySelectorAll(".it").forEach(function(n){n.remove();});
+    if(!cfg){ artEl.style.background="#0B0F18"; return; }
+    artEl.style.background=cfg.bg;
+    glowEl.style.background=cfg.glow||"#2E4A8A";
+    glowEl.style.left=(cfg.gx||50)+"%"; glowEl.style.top=(cfg.gy||45)+"%";
+    glowEl.style.transform="translate(-50%,-50%)";
+    (cfg.items||[]).forEach(function(o){
+      var s=document.createElement("span");
+      s.className="it"; s.textContent=o.e;
+      s.style.fontSize=o.s+"px";
+      s.style.left=o.x+"%"; s.style.top=o.y+"%";
+      artEl.appendChild(s);
+    });
+  }
+
+  function progress(){
+    var p=Math.min(100,Math.round(idx/STEPS.length*100));
+    barFill.style.width=p+"%";
+  }
+
+  function render(){
+    locked=false;
+    progress();
+    if(idx>=STEPS.length){ return finish(); }
+    var step=STEPS[idx];
+    artEl.style.opacity=0;
+    setTimeout(function(){artEl.style.opacity=1;},30);
+
+    if(step.type==="scene"){
+      paintArt(step.art);
+      panel.innerHTML="";
+      var p=document.createElement("div");
+      p.className="place"; p.textContent=step.place;
+      var l=document.createElement("div");
+      l.className="line"; l.innerHTML=step.line;
+      var box=document.createElement("div");
+      box.className="choices";
+      step.choices.forEach(function(c){
+        var b=document.createElement("button");
+        b.className="ch";
+        b.innerHTML='<span class="em">'+c.em+'</span><span>'+c.t+'</span>';
+        b.onclick=function(){
+          if(locked)return; locked=true;
+          for(var k in c.w){ score[k]+=c.w[k]; }
+          if(c.m) mems.push(c.m);
+          b.classList.add("hit");
+          setTimeout(next,260);
+        };
+        box.appendChild(b);
+      });
+      panel.appendChild(p); panel.appendChild(l); panel.appendChild(box);
+    }
+
+    if(step.type==="find"){
+      paintArt({bg:"linear-gradient(180deg,#0D1424,#1A1F2E)",glow:"#3A5C8A",
+        items:[{e:"🧳",s:70,x:50,y:52}]});
+      panel.innerHTML="";
+      var p2=document.createElement("div");
+      p2.className="place"; p2.textContent=step.place;
+      var l2=document.createElement("div");
+      l2.className="line"; l2.innerHTML=step.line;
+      var g=document.createElement("div");
+      g.className="grid";
+      step.items.forEach(function(it){
+        var cell=document.createElement("div");
+        cell.className="cell"; cell.textContent=it.e;
+        cell.onclick=function(){
+          if(locked)return;
+          if(it.ok){
+            locked=true;
+            cell.style.borderColor="var(--amber)";
+            mems.push(step.mem);
+            setTimeout(next,420);
+          }else{
+            cell.classList.add("shake");
+            toast("唔係呢樣，再搵");
+            setTimeout(function(){cell.classList.remove("shake");},420);
+          }
+        };
+        g.appendChild(cell);
+      });
+      panel.appendChild(p2); panel.appendChild(l2); panel.appendChild(g);
+    }
+
+    if(step.type==="photo"){
+      paintArt({bg:"linear-gradient(180deg,#0A0E1A,#1E2A40)",glow:"#4A5E8A",
+        items:[{e:"📷",s:56,x:50,y:44}]});
+      panel.innerHTML="";
+      var p3=document.createElement("div");
+      p3.className="place"; p3.textContent=step.place;
+      var l3=document.createElement("div");
+      l3.className="line"; l3.innerHTML=step.line;
+      var box3=document.createElement("div");
+      box3.className="choices";
+      step.items.forEach(function(it){
+        var b=document.createElement("button");
+        b.className="ch";
+        b.innerHTML='<span class="em">'+it.em+'</span><span>'+it.t+'</span>';
+        b.onclick=function(){
+          if(locked)return; locked=true;
+          for(var k in it.w){ score[k]+=it.w[k]; }
+          photo={bg:it.bg,em:it.em};
+          mems.push(it.mem);
+          b.classList.add("hit");
+          setTimeout(next,300);
+        };
+        box3.appendChild(b);
+      });
+      panel.appendChild(p3); panel.appendChild(l3); panel.appendChild(box3);
+    }
+  }
+
+  function next(){ idx++; render(); }
+
+  function finish(){
+    barFill.style.width="100%";
+    var order=Object.keys(score).sort(function(a,b){return score[b]-score[a];});
+    var win=CITIES[order[0]];
+
+    var html="";
+    html+='<div class="kick">四個鐘之後，你哋上咗機</div>';
+    html+='<div class="city" style="color:'+win.c+'">'+win.n+'</div>';
+    html+='<div class="theme">'+win.t+'</div>';
+    html+='<div class="reason">'+win.r+'</div>';
+    if(photo){
+      html+='<div class="sec">你影低嘅一張相</div>';
+      html+='<div class="photo" style="background:'+photo.bg+'"><span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:44px">'+photo.em+'</span></div>';
+    }
+    html+='<div class="sec">你今晚揀過嘅嘢</div>';
+    html+='<div class="chips">'+mems.map(function(m){return '<span class="chip">'+m+'</span>';}).join("")+'</div>';
+    html+='<div class="acts"><button id="again">再玩一次</button><button class="p" id="share">話我知</button></div>';
+    endEl.innerHTML=html;
+    endEl.classList.add("on");
+
+    document.getElementById("again").onclick=function(){
+      idx=0;score={sh:0,tw:0,jp:0,bj:0};mems=[];photo=null;
+      endEl.classList.remove("on");
+      panel.innerHTML="";
+      render();
+    };
+    document.getElementById("share").onclick=function(){
+      var txt="我玩完「轉機夜」\nGary 💕 琪琪\n結果："+win.n+" — "+win.t+"\n\n"+win.r+"\n\n我揀過："+mems.join("、");
+      if(navigator.share){ navigator.share({title:"轉機夜",text:txt}).catch(function(){}); }
+      else if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(function(){ toast("已複製"); }).catch(function(){ toast("複製唔到"); }); }
+      else { toast("已記錄"); }
+    };
+  }
+
+  document.getElementById("start").onclick=function(){
+    document.getElementById("title").classList.add("off");
+    setTimeout(function(){ document.getElementById("title").style.display="none"; },600);
+    render();
+  };
+})();
+</script>
+</body>
+</html>
