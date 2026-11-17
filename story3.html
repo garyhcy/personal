@@ -230,6 +230,10 @@ var IMG={}, loaded=0;
 function loadImg(k,src){ var im=new Image(); im.onload=function(){ loaded++; }; im.src=src; IMG[k]=im; }
 loadImg('map','assets/map.jpg');
 loadImg('girl','assets/girl-walk.png');
+loadImg('scene-a','assets/scene-a.jpg');
+loadImg('scene-b','assets/scene-b.jpg');
+loadImg('scene-c','assets/scene-c.jpg');
+loadImg('scene-d','assets/scene-d.jpg');
 
 function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
 function hexA(h,a){ var n=parseInt(h.slice(1),16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
@@ -275,6 +279,7 @@ var SPOTS=[
 ];
 SPOTS.forEach(function(s,i){ s.i=i; });
 
+var SCENE={a:'assets/scene-a.jpg',b:'assets/scene-b.jpg',c:'assets/scene-c.jpg',d:'assets/scene-d.jpg'};
 var PHOTO={a:'assets/photo-a.jpg',b:'assets/photo-b.jpg',c:'assets/photo-c.jpg',d:'assets/photo-d.jpg'};
 var PHOTO_T={
   a:'雨夜，紅燈籠，一條好窄嘅街。',
@@ -702,10 +707,18 @@ function paintExpShot(s){
   if(!shotCv){ shotCv=document.getElementById('expShot'); shotCtx=shotCv.getContext('2d'); }
   var g=shotCtx, CW=shotCv.width, CH=shotCv.height;
   g.clearRect(0,0,CW,CH);
-  if(!(IMG.map&&IMG.map.complete&&IMG.map.naturalWidth)) return;
-  var sw=300, sh=sw*CH/CW;
-  var sx=clamp(s.x-sw/2, 0, W-sw), sy=clamp(s.y-sh/2-20, 0, H-sh);
-  g.drawImage(IMG.map, sx,sy,sw,sh, 0,0,CW,CH);
+  var sc=IMG['scene-'+s.zone];
+  if(sc&&sc.complete&&sc.naturalWidth){
+    var iw=sc.naturalWidth, ih=sc.naturalHeight;
+    var tr=CW/CH, sr=iw/ih, cw,ch,cx,cy;
+    if(sr>tr){ ch=ih; cw=ih*tr; cx=(iw-cw)/2; cy=0; }
+    else { cw=iw; ch=iw/tr; cx=0; cy=(ih-ch)/2; }
+    g.drawImage(sc,cx,cy,cw,ch,0,0,CW,CH);
+  }else if(IMG.map&&IMG.map.complete&&IMG.map.naturalWidth){
+    var sw=300, sh=sw*CH/CW;
+    var sx=clamp(s.x-sw/2, 0, W-sw), sy=clamp(s.y-sh/2-20, 0, H-sh);
+    g.drawImage(IMG.map, sx,sy,sw,sh, 0,0,CW,CH);
+  }
   // 壓暗邊
   var vg=g.createRadialGradient(CW/2,CH*0.52,CH*0.2,CW/2,CH*0.52,CW*0.62);
   vg.addColorStop(0,'rgba(6,9,14,0)'); vg.addColorStop(1,'rgba(6,9,14,.85)');
