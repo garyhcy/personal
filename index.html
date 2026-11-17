@@ -769,7 +769,7 @@ function keepSpot(){
   }
   if(state.kept.length===3&&!state.hintDone){
     state.hintDone=true;
-    setTimeout(function(){ coach('你 開 始 知 自 己 鍾 意 咩'); },900);
+    setTimeout(function(){ coach('再 行 或 返 屋 企'); },900);
     setTimeout(function(){ coach(null); },4200);
   }
   if(state.kept.length>=6&&!state.walkHint){
@@ -822,12 +822,12 @@ function update(dt){
         if(first) state.zones.push(k);
         if(first&&state.zones.length===4&&!state.allZones){
           state.allZones=true;
-          setTimeout(function(){ toast('四張相，都行過了。'); },1200);
+          setTimeout(function(){ toast('四個區，都行過了。'); },1200);
           setTimeout(function(){ coach('⌂ 行 返 屋 企'); },2600);
           setTimeout(function(){ coach(null); },8200);
         }
         var ord=state.zones.indexOf(k)+1;
-        zoneTag(z.n+(ord<=4?' · 第 '+ord+' 張相':''));
+        zoneTag(z.n);
         if(!state.fragShown||!state.fragShown[k]){ state.fragShown=state.fragShown||{}; state.fragShown[k]=true; setTimeout(function(){ say(z.fr,4200); },1200); }
       }
       break;
@@ -929,7 +929,7 @@ function finish(){
   el.hud.classList.remove('on');
   resetEnd();
   el.end.classList.add('on');
-  el.endKick.textContent='你返到屋企。桌上多咗一張紙。';
+  el.endKick.textContent='你 今 晚 停 低 咗 '+state.kept.length+' 次';
 
   // 逐件列出她揀嘅嘢
   el.endKept.innerHTML=state.kept.map(function(i,idx){
@@ -939,7 +939,7 @@ function finish(){
   }).join('');
 
   if(!state.kept.length){
-    el.endCalc.textContent='紙上面，一個名都冇寫。';
+    el.endCalc.textContent='你今晚冇停低。';
     el.endCalc.classList.add('on');
     el.endCity.textContent='下次再行過';
     setTimeout(function(){ el.endCity.classList.add('on'); },600);
@@ -957,19 +957,17 @@ function finish(){
   var tieNote=(ties.length>1 && top>0)
     ? tally+'\n\n幾邊一樣多，就以你最先停低嗰樣為準。' : tally;
   setTimeout(function(){ el.endCalc.textContent=tieNote; el.endCalc.classList.add('on'); },800);
-  setTimeout(function(){ el.endLead.textContent='你今晚停低嘅，我一樣一樣都停過。'; el.endLead.classList.add('on'); },1700);
-  setTimeout(function(){ el.endCity.textContent=city.n; el.endCity.classList.add('on'); blip(523,.07); },2500);
-  setTimeout(function(){ el.endLine.textContent=city.line; el.endLine.classList.add('on'); },3300);
-  setTimeout(function(){ el.endTail.textContent='（張紙我寫咗好耐。你揀邊樣，都係答案。）'; el.endTail.classList.add('on'); },4200);
-  setTimeout(function(){ el.again.classList.add('on'); },5000);
+
+  setTimeout(function(){ el.endLead.textContent='你停低最多嘅，就係我哋去嘅地方。'; el.endLead.classList.add('on'); },1300);
+  setTimeout(function(){ el.endCity.textContent=city.n; el.endCity.classList.add('on'); blip(523,.07); },2000);
+  setTimeout(function(){ el.endLine.textContent=city.line; el.endLine.classList.add('on'); },2700);
+
+  setTimeout(function(){ el.again.classList.add('on'); },3700);
 }
 
 /* ============ 開場 ============ */
 var INTRO=[
-  {k:'一 把 鎖 匙',t:'你喺門口企咗一陣。\n鎖匙係佢寄嚟嘅。信封上冇寫名，\n只有一條街名。',b:'開門'},
-  {k:'冇 人 喺 屋 企',t:'屋入面好空，空到聽到自己呼吸。\n窗邊有四張相。',b:'埋去睇'},
-  {k:'四 張 相',t:'四張都褪色，褪到剩返一片光。\n相背有字，字都化開咗。',b:'摸一下'},
-  {k:'相 入 面 有 路',t:'你用手指掃過第一張。\n腳下嘅石屎路，慢慢浮出嚟。',b:'行入去'}
+  {k:'今 晚',t:'冇目的地。\n你行前面，我跟住。',b:'行'}
 ];
 var istep=0, intro=document.getElementById('intro');
 var ikick=document.getElementById('ikick'), ilead=document.getElementById('ilead'), go=document.getElementById('go');
@@ -984,7 +982,7 @@ go.onclick=function(){
   started=true;
   el.hud.classList.add('on');
   coachStep=0; coach('☝ 點 地 下 ， 行 過 去');
-  setTimeout(function(){ say('第一張相。雨聲先到。'); },700);
+  setTimeout(function(){ say('你想停就停。'); },700);
 };
 
 el.again.onclick=function(){ boot(); };
