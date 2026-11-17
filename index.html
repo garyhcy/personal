@@ -23,7 +23,9 @@
     font-size:15px;color:rgba(237,230,216,.26);
     transition:border-color .5s,color .5s,box-shadow .5s,transform .3s}
   .slot.got{border-color:rgba(243,193,120,.9);color:#F3C178;
-    box-shadow:0 0 16px rgba(243,193,120,.30);transform:scale(1.05)}
+    box-shadow:0 0 16px rgba(243,193,120,.30);transform:scale(1.05);
+    background-size:cover;background-position:center}
+  .slot.got::after{content:''}
   #obj{font-size:11.5px;letter-spacing:.16em;color:rgba(237,230,216,.46);
     padding:5px 14px;border-radius:99px;background:rgba(8,11,18,.55);
     border:1px solid rgba(237,230,216,.10);transition:color .5s,border-color .5s}
@@ -100,11 +102,20 @@
   #end{background:radial-gradient(circle at 50% 40%,#1A2130 0%,#080B12 64%)}
   #room{width:100%;max-width:430px;display:flex;flex-direction:column;align-items:center}
   #frames{display:flex;gap:11px;margin-bottom:28px}
-  .frame{width:62px;height:78px;border:1px solid rgba(243,193,120,.30);padding:3px;
+  .frame{width:74px;height:94px;border:1px solid rgba(243,193,120,.30);padding:3px;
     opacity:0;transform:translateY(8px) scale(.96);transition:opacity .8s,transform .8s;
     box-shadow:0 8px 26px rgba(0,0,0,.65)}
   .frame.on{opacity:1;transform:none}
   .frame i{display:block;width:100%;height:100%}
+  .frame b{display:block;font-weight:400;font-size:9.5px;letter-spacing:.12em;
+    color:rgba(237,230,216,.5);text-align:center;margin-top:6px}
+  .frame.sel b{color:#F3C178}
+  #frames{align-items:flex-start}
+  .frame{transition:opacity .8s,transform .8s,box-shadow .5s}
+  #end.choosing .frame{pointer-events:auto;cursor:pointer}
+  #end.choosing .frame:hover{box-shadow:0 0 0 1px rgba(243,193,120,.7),0 8px 26px rgba(0,0,0,.65)}
+  .frame.sel{transform:scale(1.16);box-shadow:0 0 0 1px rgba(243,193,120,.9),0 14px 40px rgba(0,0,0,.7),0 0 30px rgba(243,193,120,.22)}
+  .frame.dim{opacity:.22}
   .f-a i{background:url(assets/photo-a.jpg) center/cover no-repeat}
   .f-b i{background:url(assets/photo-b.jpg) center/cover no-repeat}
   .f-c i{background:url(assets/photo-c.jpg) center/cover no-repeat}
@@ -132,11 +143,12 @@
 
 <div id="hud">
   <div id="slots">
-    <div class="slot" id="s0">？</div>
-    <div class="slot" id="s1">？</div>
-    <div class="slot" id="s2">？</div>
+    <div class="slot" id="s0"></div>
+    <div class="slot" id="s1"></div>
+    <div class="slot" id="s2"></div>
+    <div class="slot" id="s3"></div>
   </div>
-  <div id="obj">走 廊 盡 頭 嘅 門 · 0 / 3</div>
+  <div id="obj">門 後 面 · 0 / 4</div>
 </div>
 
 <div id="zonetag"></div>
@@ -159,10 +171,10 @@
 <div id="end" class="screen">
   <div id="room">
     <div id="frames">
-      <div class="frame f-a"><i></i></div>
-      <div class="frame f-b"><i></i></div>
-      <div class="frame f-c"><i></i></div>
-      <div class="frame f-d"><i></i></div>
+      <div class="frame f-a"><i></i><b>紅燈籠</b></div>
+      <div class="frame f-b"><i></i><b>山上面</b></div>
+      <div class="frame f-c"><i></i><b>河邊</b></div>
+      <div class="frame f-d"><i></i><b>夜市</b></div>
     </div>
     <div class="paper" id="paper">
       <p id="p1"></p>
@@ -202,27 +214,29 @@ var WATER={x0:0,x1:560,y0:648};
 var SPOTS=[
   {zone:'a',x:255,y:300,art:'lantern',label:'紅燈籠',line:'啲燈紅得好舊，好似細個屋企樓下嗰間。'},
   {zone:'a',x:415,y:352,art:'bowl',label:'麵檔',line:'呢條街落過雨。地下仲反光。'},
-  {zone:'a',x:330,y:432,art:'ticket',label:'一地紙',clue:0,line:'一張車票。字都化咗，唔知去邊。'},
+  {zone:'a',x:330,y:432,art:'photo',label:'一張相',clue:'a',line:'一張相。雨夜，紅燈籠，一條好窄嘅街。'},
 
   {zone:'b',x:1216,y:196,art:'bath',label:'澡堂',line:'行到呢度，耳朵突然靜咗。'},
   {zone:'b',x:1146,y:330,art:'lantern',label:'石階燈',line:'有蒸氣。係澡堂。'},
-  {zone:'b',x:1182,y:428,art:'pencil',label:'石級邊',clue:1,line:'一枝鉛筆，寫到剩返一截。'},
+  {zone:'b',x:1182,y:428,art:'photo',label:'一張相',clue:'b',line:'一張相。山上面嘅澡堂，門口有蒸氣。'},
 
   {zone:'c',x:300,y:596,art:'lantern',label:'水面燈',line:'水面有燈，一路飄。'},
   {zone:'c',x:452,y:632,art:'boat',label:'小船',line:'我想喺度坐一陣。'},
-  {zone:'c',x:188,y:606,art:'photo',label:'濕咗嘅相',clue:2,line:'一張相，撕咗一角。'},
+  {zone:'c',x:188,y:606,art:'photo',label:'一張相',clue:'c',line:'一張相。河邊，燈浮喺水面。'},
 
   {zone:'d',x:930,y:642,art:'stall',label:'麵檔',line:'好多聲。有人叫賣，有人笑。'},
   {zone:'d',x:1082,y:722,art:'sugar',label:'糖',line:'糖。買咗一枝，唔捨得食。'},
-  {zone:'d',x:1220,y:858,art:'bowl',label:'檯邊',line:'呢度好似唔會停。'}
+  {zone:'d',x:1220,y:858,art:'photo',label:'一張相',clue:'d',line:'一張相。夜市，帆布下面一盞一盞燈。'}
 ];
 SPOTS.forEach(function(s,i){ s.i=i; });
 
-var CLUES=[
-  {g:'✉',t:'一張被雨淋到發脹嘅車票。\n目的地嗰行，化開咗。'},
-  {g:'✎',t:'一枝用到剩返一截嘅鉛筆。\n筆身有牙印。'},
-  {g:'▤',t:'一張撕咗一角嘅相。\n背面寫住「呢度，我住過」。'}
-];
+var PHOTO={a:'assets/photo-a.jpg',b:'assets/photo-b.jpg',c:'assets/photo-c.jpg',d:'assets/photo-d.jpg'};
+var PHOTO_T={
+  a:'雨夜，紅燈籠，一條好窄嘅街。',
+  b:'山上面嘅澡堂，門口一直有蒸氣。',
+  c:'河邊，燈浮喺水面，一路飄。',
+  d:'夜市，帆布下面一盞一盞燈。'
+};
 
 /* ============ 狀態 ============ */
 var state, started=false, pending=-1, t=0, last=0, soundOn=true;
@@ -232,7 +246,7 @@ var flies=[];
 
 function newState(){
   return {p:{x:HOUSE.x,y:HOUSE.y+66},face:1,moving:false,tgt:null,
-    done:{},seenZone:{},clues:{},stopped:0,counts:{a:0,b:0,c:0,d:0},
+    done:{},seenZone:{},photos:{},stopped:0,counts:{a:0,b:0,c:0,d:0},
     ended:false,readyToast:false,walk:0};
 }
 
@@ -339,7 +353,7 @@ function drawSpots(){
 }
 
 function drawHouseGlow(){
-  var ready=Object.keys(state.clues).length>=3;
+  var ready=photoCount()>=4;
   var pulse=0.5+0.5*Math.sin(t*1.9);
   var r=ready?(120+pulse*22):78;
   var g2=ctx.createRadialGradient(HOUSE.x,HOUSE.y+18,0,HOUSE.x,HOUSE.y+18,r);
@@ -404,7 +418,7 @@ function drawWaypoints(){
     var s=SPOTS[i];
     if(s.clue!==undefined&&!state.done[s.i]) list.push({x:s.x,y:s.y,g:CLUES[s.clue].g});
   }
-  if(Object.keys(state.clues).length>=3&&!state.ended) list.push({x:HOUSE.x,y:HOUSE.y,g:'⌂'});
+  if(photoCount()>=4&&!state.ended) list.push({x:HOUSE.x,y:HOUSE.y,g:'⌂'});
   var shown=0;
   for(var k=0;k<list.length&&shown<3;k++){
     var p=w2s(list[k].x,list[k].y);
@@ -530,7 +544,7 @@ function drawSpots(){
 
 function drawHouse(){
   var p=w2s(HOUSE.x,HOUSE.y);
-  var ready=clueCount()>=3&&!state.ended;
+  var ready=photoCount()>=4&&!state.ended;
   glow(ctx,p.x,p.y,ready?70:44, ready?'rgba(243,193,120,.30)':'rgba(243,193,120,.14)');
   if(ready){
     var bh=120, lg=ctx.createLinearGradient(0,p.y-bh,0,p.y);
@@ -592,7 +606,7 @@ function drawWaypoints(){
     if(s.clue===undefined||state.done[s.i]) continue;
     list.push({x:s.x,y:s.y,c:ZONES[s.zone].c,g:'✉'});
   }
-  if(clueCount()>=3&&!state.ended){ list=[{x:HOUSE.x,y:HOUSE.y,c:'#F3C178',g:'⌂'}]; }
+  if(photoCount()>=4&&!state.ended){ list=[{x:HOUSE.x,y:HOUSE.y,c:'#F3C178',g:'⌂'}]; }
   if(!list.length) return;
   list.sort(function(a,b){
     return Math.hypot(a.x-state.p.x,a.y-state.p.y)-Math.hypot(b.x-state.p.x,b.y-state.p.y);
@@ -631,13 +645,13 @@ var el={cap:document.getElementById('cap'),hud:document.getElementById('hud'),
   zonetag:document.getElementById('zonetag'),coach:document.getElementById('coach'),
   coachTx:document.getElementById('coachTx'),
   clue:document.getElementById('clue'),clueGlyph:document.getElementById('clueGlyph'),
-  clueTxt:document.getElementById('clueTxt'),
+  clueTxt:document.getElementById('clueTxt'),clueKick:document.getElementById('clueKick'),
   end:document.getElementById('end'),paper:document.getElementById('paper'),
   p1:document.getElementById('p1'),p2:document.getElementById('p2'),
   endCity:document.getElementById('endCity'),endLine:document.getElementById('endLine'),
   endSmall:document.getElementById('endSmall'),again:document.getElementById('again'),
   frames:[].map.call(document.querySelectorAll('.frame'),function(f){return f;}),
-  slots:[document.getElementById('s0'),document.getElementById('s1'),document.getElementById('s2')]};
+  slots:[document.getElementById('s0'),document.getElementById('s1'),document.getElementById('s2'),document.getElementById('s3')]};
 
 var capT=null;
 function say(txt,ms){
@@ -660,21 +674,23 @@ function zoneTag(n){
   setTimeout(function(){ el.zonetag.classList.remove('on'); },2400);
 }
 function updateSlots(){
-  for(var i=0;i<3;i++){
-    var got=!!state.clues[i];
+  var keys=['a','b','c','d'];
+  for(var i=0;i<4;i++){
+    var got=!!state.photos[keys[i]];
     el.slots[i].classList.toggle('got',got);
-    el.slots[i].textContent=got?['✉','✎','▤'][i]:'？';
+    el.slots[i].style.backgroundImage=got?'url('+PHOTO[keys[i]]+')':'none';
   }
-  var n=clueCount();
-  el.obj.textContent = n>=3 ? '返 屋 企' : '走 廊 盡 頭 嘅 門 · '+n+' / 3';
-  el.obj.classList.toggle('ready',n>=3);
+  var n=photoCount();
+  el.obj.textContent = n>=4 ? '返 屋 企' : '門 後 面 · '+n+' / 4';
+  el.obj.classList.toggle('ready',n>=4);
 }
-function showClue(i){
-  el.clueGlyph.textContent=CLUES[i].g;
-  el.clueTxt.textContent=CLUES[i].t;
+function showPhoto(k){
+  el.clueGlyph.innerHTML='<img src="'+PHOTO[k]+'" style="width:132px;height:96px;object-fit:cover;border-radius:3px;border:1px solid rgba(243,193,120,.35)">';
+  el.clueTxt.textContent=PHOTO_T[k];
+  el.clueKick.textContent='其 中 一 張 相';
   el.clue.classList.add('on');
-  setTimeout(function(){ el.clue.classList.remove('on'); },2400);
-  blip(520+i*120,.10);
+  setTimeout(function(){ el.clue.classList.remove('on'); },2600);
+  blip(520,.10);
 }
 
 /* 音 */
@@ -694,7 +710,7 @@ document.getElementById('mute').onclick=function(){
 };
 
 /* ============ 互動 ============ */
-function clueCount(){ var n=0; for(var k in state.clues) if(state.clues[k]) n++; return n; }
+function photoCount(){ var n=0; for(var k in state.photos) if(state.photos[k]) n++; return n; }
 
 function clampTgt(x,y){
   x=clamp(x,40,W-40); y=clamp(y,40,H-40);
@@ -708,7 +724,7 @@ function walkTo(x,y){
 function handleTap(sx,sy){
   if(!started||state.ended) return;
   var w=s2w(sx,sy);
-  if(clueCount()>=3 && Math.hypot(w.x-HOUSE.x,w.y-HOUSE.y)<140){
+  if(photoCount()>=4 && Math.hypot(w.x-HOUSE.x,w.y-HOUSE.y)<140){
     pending=-2; walkTo(HOUSE.x,HOUSE.y+56); return;
   }
   var best=-1,bd=1e9;
@@ -736,20 +752,19 @@ function collect(i){
   state.stopped++;
   state.counts[s.zone]++;
   if(state.order.indexOf(s.zone)<0) state.order.push(s.zone);
-  if(!state.seenZone[s.zone]){ state.seenZone[s.zone]=true; }
-  blip(s.clue!==undefined?660:440,.055);
-  if(navigator.vibrate) navigator.vibrate(s.clue!==undefined?18:8);
+  blip(s.clue?660:440,.055);
+  if(navigator.vibrate) navigator.vibrate(s.clue?18:8);
   if(s.line) say(s.line);
-  if(s.clue!==undefined){
-    state.clues[s.clue]=true;
+  if(s.clue){
+    state.photos[s.clue]=true;
     updateSlots();
-    showClue(s.clue);
-    if(coachStep<2){ coachStep=2; setTimeout(function(){ coach(null); },2800); }
+    showPhoto(s.clue);
+    if(coachStep<2){ coachStep=2; setTimeout(function(){ coach(null); },3000); }
   }
-  if(coachStep===0){ coachStep=1; coach('☝ 搵發光嘅嘢 — 三樣：票、筆、相'); }
-  if(clueCount()>=3&&!state.readyToast){
+  if(coachStep===0){ coachStep=1; coach('☝ 搵發光嘅嘢 — 一共四張相'); }
+  if(photoCount()>=4&&!state.readyToast){
     state.readyToast=true;
-    setTimeout(function(){ toast('三樣嘢齊了 · 返屋企'); coach('⌂ 行返屋企'); coachStep=3; },900);
+    setTimeout(function(){ toast('四張相齊了 · 返屋企'); coach('⌂ 行返屋企'); },900);
     setTimeout(function(){ coach(null); },5200);
   }
 }
@@ -831,16 +846,16 @@ function render(dt){
 function frame(ts){
   var dt=Math.min(0.05,(ts-last)/1000||0.016); last=ts;
   t+=dt;
-  if(started&&!state.ended) update(dt);
-  render(dt);
+  try{ if(started&&!state.ended) update(dt); }catch(e){ if(window.__err) window.__err.push('update:'+e.message); }
+  try{ render(dt); }catch(e){ if(window.__err) window.__err.push('render:'+e.message); }
   requestAnimationFrame(frame);
 }
 /* ============ 結局 ============ */
 var CITY={
-  a:{n:'上海',line:'我哋 12 月，去上海。\n三晚，我帶你行。'},
-  b:{n:'台灣',line:'我哋 12 月，去台灣。\n三晚，我帶你行。'},
-  c:{n:'日本',line:'我哋 12 月，去日本。\n三晚，我帶你行。'},
-  d:{n:'北京',line:'我哋 12 月，去北京。\n三晚，我帶你行。'}
+  a:{n:'上海',pick:'紅燈籠'},
+  b:{n:'台灣',pick:'山上面'},
+  c:{n:'日本',pick:'河邊'},
+  d:{n:'北京',pick:'夜市'}
 };
 function winner(){
   var best=null,bv=-1;
@@ -855,32 +870,55 @@ function winner(){
   if(!best||bv===0) best='a';
   return best;
 }
-function finish(){
-  if(state.ended) return;
-  state.ended=true; state.moving=false; state.tgt=null; pending=-1;
-  coach(null);
-  var k=winner(), city=CITY[k];
-  el.hud.classList.remove('on');
-  el.end.classList.add('on');
-  el.again.classList.remove('on');
+var KEYS=['a','b','c','d'];
+function resetEnd(){
+  el.end.classList.remove('on','choosing');
   el.endCity.textContent=''; el.endCity.classList.remove('on');
   el.endLine.textContent=''; el.endLine.classList.remove('on');
-  el.endSmall.classList.remove('on');
+  el.endSmall.textContent=''; el.endSmall.classList.remove('on');
   el.paper.classList.remove('on');
-  el.frames.forEach(function(f){ f.classList.remove('on'); });
-
-  setTimeout(function(){ el.frames[0].classList.add('on'); },260);
-  setTimeout(function(){ el.frames[1].classList.add('on'); },520);
-  setTimeout(function(){ el.frames[2].classList.add('on'); },780);
-  setTimeout(function(){ el.frames[3].classList.add('on'); },1040);
-
-  el.p1.textContent='你返到屋企。桌上多咗一張紙。';
-  el.p2.textContent='「呢四張相，係我住過嘅地方。\n你揀嘅嗰個，幫我去睇一次。」';
-  setTimeout(function(){ el.paper.classList.add('on'); blip(392,.05); },1900);
-  setTimeout(function(){ el.endCity.textContent=city.n; el.endCity.classList.add('on'); blip(523,.07); },3400);
-  setTimeout(function(){ el.endLine.textContent=city.line; el.endLine.classList.add('on'); },4400);
-  setTimeout(function(){ el.endSmall.textContent='你今晚停低咗 '+state.stopped+' 次'; el.endSmall.classList.add('on'); },5400);
-  setTimeout(function(){ el.again.classList.add('on'); },5900);
+  el.again.classList.remove('on');
+  el.frames.forEach(function(f){ f.classList.remove('on','sel','dim'); });
+}
+function finish(){
+  if(state.ended) return;
+  state.ended=true; state.moving=false; state.tgt=null; pending=-1; state.pick=null;
+  coach(null);
+  el.hud.classList.remove('on');
+  resetEnd();
+  el.end.classList.add('on');
+  el.p1.textContent='你帶返四張相，擺喺桌上。';
+  el.p2.textContent='「呢四張相，係我一直想去嘅地方。\n你揀一張，我哋一齊去。」';
+  setTimeout(function(){ el.frames[0].classList.add('on'); },240);
+  setTimeout(function(){ el.frames[1].classList.add('on'); },460);
+  setTimeout(function(){ el.frames[2].classList.add('on'); },680);
+  setTimeout(function(){ el.frames[3].classList.add('on'); },900);
+  setTimeout(function(){ el.paper.classList.add('on'); blip(392,.05); },1100);
+  setTimeout(function(){
+    el.endSmall.textContent='點 一 張 相';
+    el.endSmall.classList.add('on');
+    el.end.classList.add('choosing');
+  },2600);
+}
+function choose(k){
+  if(state.pick) return;
+  state.pick=k;
+  var city=CITY[k];
+  el.end.classList.remove('choosing');
+  el.endSmall.classList.remove('on');
+  el.frames.forEach(function(f,i){
+    var key=KEYS[i];
+    f.classList.toggle('sel',key===k);
+    f.classList.toggle('dim',key!==k);
+  });
+  blip(523,.07);
+  setTimeout(function(){ el.endCity.textContent=city.n; el.endCity.classList.add('on'); },1000);
+  setTimeout(function(){
+    el.endLine.textContent='你揀咗'+city.pick+'。\n我哋 12 月，去'+city.n+'。\n三晚，我帶你行。';
+    el.endLine.classList.add('on');
+  },1800);
+  setTimeout(function(){ el.endSmall.textContent='你今晚停低咗 '+state.stopped+' 次'; el.endSmall.classList.add('on'); },2700);
+  setTimeout(function(){ el.again.classList.add('on'); },3200);
 }
 
 /* ============ 開場 ============ */
@@ -906,11 +944,12 @@ go.onclick=function(){
 };
 
 el.again.onclick=function(){ boot(); };
+el.frames.forEach(function(f,i){ f.onclick=function(){ choose(KEYS[i]); }; });
 
 /* ============ 啟動 ============ */
 function boot(){
   state=newState();
-  state.order=[]; state.fragShown={};
+  state.order=[]; state.fragShown={}; state.photos={}; state.pick=null;
   order=[]; pending=-1; coachStep=0; movedOnce=false;
   cam={x:HOUSE.x,y:HOUSE.y+70,scale:cam.scale};
   el.end.classList.remove('on');
@@ -937,7 +976,7 @@ cv.addEventListener('pointerdown',function(e){
 window.__g={
   state:function(){ return state; },
   spots:function(){ return SPOTS; },
-  clues:function(){ var a=[]; for(var k in state.clues) if(state.clues[k]) a.push(k); return a; },
+  photos:function(){ var a=[]; for(var k in state.photos) if(state.photos[k]) a.push(k); return a; },
   teleport:function(x,y){ state.p.x=x; state.p.y=y; cam.x=x; cam.y=y; },
   tap:function(p){ handleTap(p.x,p.y); },
   walkTo:walkTo, finish:finish, boot:boot,
