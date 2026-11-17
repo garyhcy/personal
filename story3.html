@@ -153,6 +153,12 @@
   #endCalc{font-size:11px;letter-spacing:.14em;color:rgba(237,230,216,.42);margin-bottom:20px;text-align:center;white-space:pre-line;line-height:1.9;
     opacity:0;transition:opacity .6s}
   #endCalc.on{opacity:1}
+  #endLead{font-size:13px;line-height:1.95;color:rgba(221,212,196,.62);letter-spacing:.06em;
+    max-width:300px;margin:0 auto;text-align:center;white-space:pre-line;opacity:0;transition:opacity .7s}
+  #endLead.on{opacity:1}
+  #endTail{font-size:11.5px;line-height:1.9;color:rgba(237,230,216,.44);letter-spacing:.10em;
+    margin-top:16px;text-align:center;opacity:0;transition:opacity .7s}
+  #endTail.on{opacity:1}
   #endCity{font-size:36px;letter-spacing:.32em;margin:14px 0 2px;opacity:0;
     transition:opacity 1s,letter-spacing 1.4s;color:#F3C178}
   #endCity.on{opacity:1;letter-spacing:.16em}
@@ -206,8 +212,10 @@
     <div class="kick2" id="endKick">你 今 晚 停 低 咗 0 次</div>
     <div id="endKept"></div>
     <div id="endCalc"></div>
+    <div id="endLead"></div>
     <div id="endCity"></div>
     <div id="endLine"></div>
+    <div id="endTail"></div>
     <button class="btn" id="again">再 行 一 次</button>
   </div>
 </div>
@@ -242,32 +250,32 @@ var WATER={x0:0,x1:560,y0:648};
 
 var SPOTS=[
   {zone:'a',x:255,y:300,art:'lantern',label:'紅燈籠',city:'sh',
-   line:'啲燈紅得好舊，好似細個屋企樓下嗰間。\n雨落喺簷篷上面，一格一格咁响。'},
+   line:'燈籠紅得好舊，紅到似退咗色。\n雨打落上面，燈影一格一格咁搖。'},
   {zone:'a',x:415,y:352,art:'bowl',label:'熱湯麵',city:'tw',
-   line:'呢條街落過雨，地下仲反光。\n有檔嘢食仲開住，熱氣由布簾下面漏出嚟。'},
+   line:'布簾下面漏出熱氣，湯滾緊。\n我企喺簷下，聞到蔥同豬油。'},
   {zone:'a',x:330,y:432,art:'photo',label:'雨打簷篷',city:'sh',
-   line:'雨打落鐵皮簷篷，响得好實。\n我企喺門邊等咗一陣，唔捨得走。'},
+   line:'雨打鐵皮，响得好實。\n有人喺裡面熄咗燈，隔一陣又開返。'},
 
   {zone:'b',x:1216,y:196,art:'bath',label:'蒸氣',city:'jp',
-   line:'行到呢度，耳朵突然靜咗。\n蒸氣由門縫漏出嚟，暖暖地。'},
+   line:'行到呢度，耳朵突然靜咗。\n蒸氣由門縫鑽出嚟，暖嘅。'},
   {zone:'b',x:1146,y:330,art:'lantern',label:'石階',city:'bj',
    line:'石階一級一級，燈隔幾級先有一盞。\n我行到一半，停低聽水聲。'},
   {zone:'b',x:1182,y:428,art:'photo',label:'松樹',city:'jp',
-   line:'松樹好高，風一吹，成片山都响。\n空氣有陣樹味，凍。'},
+   line:'松樹好高，風一過，成片山都响。\n空氣有陣樹脂味，凍嘅。'},
 
   {zone:'c',x:300,y:596,art:'lantern',label:'浮燈',city:'jp',
-   line:'水面有燈，一路飄，飄到好遠。\n有人喺對岸放，睇唔到樣。'},
+   line:'水面有燈，一路飄，飄到睇唔到。\n對岸有人放緊，冇樣。'},
   {zone:'c',x:452,y:632,art:'boat',label:'小船',city:'sh',
-   line:'隻船纜住喺岸邊，纜繩鬆鬆地。\n我想喺度坐一陣，唔講嘢。'},
+   line:'隻船纜喺岸邊，纜繩鬆鬆地。\n我想坐一陣，唔講嘢。'},
   {zone:'c',x:188,y:606,art:'photo',label:'河水',city:'bj',
-   line:'河水拍住石堤，一下一下。\n我伸手去掂，凍嘅。'},
+   line:'河水拍石堤，一下一下，唔急。\n伸手去掂，凍到縮手。'},
 
   {zone:'d',x:930,y:642,art:'stall',label:'檔口',city:'bj',
-   line:'好多聲。有人叫賣，有人笑，有人同隔籬檔嗌交。\n鑊氣好重。'},
+   line:'鑊氣撐起半條街。\n有人叫賣，有人同隔籬檔嗌交，然後一齊笑。'},
   {zone:'d',x:1082,y:722,art:'sugar',label:'糖',city:'tw',
-   line:'糖。買咗一枝，唔捨得食。\n拎住行咗半條街，都仲係暖。'},
+   line:'買咗一枝糖，唔捨得食。\n拎住行咗半條街，仲暖。'},
   {zone:'d',x:1220,y:858,art:'photo',label:'人聲',city:'tw',
-   line:'全部人都係本地人，講嘢好快。\n我聽唔明，但覺得好熱鬧。'}
+   line:'全部都講得好快，我聽唔明。\n但佢哋笑嘅位，我大概明。'}
 ];
 SPOTS.forEach(function(s,i){ s.i=i; });
 
@@ -289,7 +297,7 @@ var flies=[];
 
 function newState(){
   return {p:{x:HOUSE.x,y:HOUSE.y+66},face:1,moving:false,tgt:null,
-    done:{},seenZone:{},kept:[],stopped:0,counts:{sh:0,tw:0,jp:0,bj:0},
+    done:{},seenZone:{},kept:[],zones:[],stopped:0,counts:{sh:0,tw:0,jp:0,bj:0},
     ended:false,walk:0,paused:false};
 }
 
@@ -598,6 +606,7 @@ var el={cap:document.getElementById('cap'),hud:document.getElementById('hud'),
   endSmall:document.getElementById('endSmall'),again:document.getElementById('again'),
   endKept:document.getElementById('endKept'),endCalc:document.getElementById('endCalc'),
   endKick:document.getElementById('endKick'),keptBox:document.getElementById('kept'),
+  endLead:document.getElementById('endLead'),endTail:document.getElementById('endTail'),
   exp:document.getElementById('exp'),expTitle:document.getElementById('expTitle'),
   expTx:document.getElementById('expTx'),expKeep:document.getElementById('expKeep'),
   expSkip:document.getElementById('expSkip'),expKick:document.getElementById('expKick')};
@@ -754,11 +763,19 @@ function keepSpot(){
   if(navigator.vibrate) navigator.vibrate(16);
   closeExp();
   say('記住咗。');
-  if(state.kept.length===1) toast('再行多幾個地方，我大概知你想去邊');
-  if(state.kept.length>=3&&!state.hintDone){
+  if(state.kept.length===1){
+    setTimeout(function(){ coach('再 行 多 幾 處'); },900);
+    setTimeout(function(){ coach(null); },4200);
+  }
+  if(state.kept.length===3&&!state.hintDone){
     state.hintDone=true;
-    setTimeout(function(){ coach('⌂ 想走嘅話，行返屋企'); },1800);
-    setTimeout(function(){ coach(null); },6200);
+    setTimeout(function(){ coach('你 開 始 知 自 己 鍾 意 咩'); },900);
+    setTimeout(function(){ coach(null); },4200);
+  }
+  if(state.kept.length>=6&&!state.walkHint){
+    state.walkHint=true;
+    setTimeout(function(){ coach('⌂ 行 夠 就 返 屋 企'); },900);
+    setTimeout(function(){ coach(null); },5200);
   }
 }
 
@@ -793,13 +810,24 @@ function update(dt){
 
   // 首次移動提示
   if(!movedOnce&&state.stopped===0&&state.moving){ }
-  if(!movedOnce&&state.walk>60){ movedOnce=true; if(coachStep===0){ coachStep=1; coach('☝ 搵發光嘅嘢 — 三樣：票、筆、相'); } }
+  if(!movedOnce&&state.walk>60){ movedOnce=true; if(coachStep===0){ coachStep=1; coach('☝ 點發光嘅地方，行過去'); } }
 
   // 區名
   for(var k in ZONES){
     var z=ZONES[k];
     if(Math.hypot(state.p.x-z.x,state.p.y-z.y)<250){
-      if(state.zoneNow!==k){ state.zoneNow=k; zoneTag(z.n);
+      if(state.zoneNow!==k){
+        state.zoneNow=k;
+        var first=state.zones.indexOf(k)<0;
+        if(first) state.zones.push(k);
+        if(first&&state.zones.length===4&&!state.allZones){
+          state.allZones=true;
+          setTimeout(function(){ toast('四張相，都行過了。'); },1200);
+          setTimeout(function(){ coach('⌂ 行 返 屋 企'); },2600);
+          setTimeout(function(){ coach(null); },8200);
+        }
+        var ord=state.zones.indexOf(k)+1;
+        zoneTag(z.n+(ord<=4?' · 第 '+ord+' 張相':''));
         if(!state.fragShown||!state.fragShown[k]){ state.fragShown=state.fragShown||{}; state.fragShown[k]=true; setTimeout(function(){ say(z.fr,4200); },1200); }
       }
       break;
@@ -888,6 +916,8 @@ function resetEnd(){
   el.endCity.textContent=''; el.endCity.classList.remove('on');
   el.endLine.textContent=''; el.endLine.classList.remove('on');
   el.endCalc.textContent=''; el.endCalc.classList.remove('on');
+  el.endLead.textContent=''; el.endLead.classList.remove('on');
+  el.endTail.textContent=''; el.endTail.classList.remove('on');
   el.endKept.innerHTML='';
   el.again.classList.remove('on');
 }
@@ -899,7 +929,7 @@ function finish(){
   el.hud.classList.remove('on');
   resetEnd();
   el.end.classList.add('on');
-  el.endKick.textContent='你 今 晚 停 低 咗 '+state.kept.length+' 次';
+  el.endKick.textContent='你返到屋企。桌上多咗一張紙。';
 
   // 逐件列出她揀嘅嘢
   el.endKept.innerHTML=state.kept.map(function(i,idx){
@@ -909,7 +939,7 @@ function finish(){
   }).join('');
 
   if(!state.kept.length){
-    el.endCalc.textContent='你今晚冇停低。';
+    el.endCalc.textContent='紙上面，一個名都冇寫。';
     el.endCalc.classList.add('on');
     el.endCity.textContent='下次再行過';
     setTimeout(function(){ el.endCity.classList.add('on'); },600);
@@ -926,18 +956,20 @@ function finish(){
   var ties=['sh','tw','jp','bj'].filter(function(x){ return (state.counts[x]||0)===top; });
   var tieNote=(ties.length>1 && top>0)
     ? tally+'\n\n幾邊一樣多，就以你最先停低嗰樣為準。' : tally;
-  setTimeout(function(){ el.endCalc.textContent=tieNote; el.endCalc.classList.add('on'); },700);
-  setTimeout(function(){ el.endCity.textContent=city.n; el.endCity.classList.add('on'); blip(523,.07); },1500);
-  setTimeout(function(){ el.endLine.textContent=city.line; el.endLine.classList.add('on'); },2300);
-  setTimeout(function(){ el.again.classList.add('on'); },3000);
+  setTimeout(function(){ el.endCalc.textContent=tieNote; el.endCalc.classList.add('on'); },800);
+  setTimeout(function(){ el.endLead.textContent='你今晚停低嘅，我一樣一樣都停過。'; el.endLead.classList.add('on'); },1700);
+  setTimeout(function(){ el.endCity.textContent=city.n; el.endCity.classList.add('on'); blip(523,.07); },2500);
+  setTimeout(function(){ el.endLine.textContent=city.line; el.endLine.classList.add('on'); },3300);
+  setTimeout(function(){ el.endTail.textContent='（張紙我寫咗好耐。你揀邊樣，都係答案。）'; el.endTail.classList.add('on'); },4200);
+  setTimeout(function(){ el.again.classList.add('on'); },5000);
 }
 
 /* ============ 開場 ============ */
 var INTRO=[
-  {k:'一 把 鎖 匙',t:'你喺門口企咗一陣。',b:'開門'},
-  {k:'一 把 鎖 匙',t:'鎖匙係佢寄嚟嘅。\n信封上面冇寫名，只有一個地址。',b:'入去'},
-  {k:'冇 人 喺 屋 企',t:'屋入面好空。\n窗邊有四張相，\n四張都褪色到剩返一片光。',b:'摸一下'},
-  {k:'相 入 面 有 路',t:'你用手指掃過第一張相。\n腳下嘅石屎路，慢慢浮出嚟。',b:'行入去'}
+  {k:'一 把 鎖 匙',t:'你喺門口企咗一陣。\n鎖匙係佢寄嚟嘅。信封上冇寫名，\n只有一條街名。',b:'開門'},
+  {k:'冇 人 喺 屋 企',t:'屋入面好空，空到聽到自己呼吸。\n窗邊有四張相。',b:'埋去睇'},
+  {k:'四 張 相',t:'四張都褪色，褪到剩返一片光。\n相背有字，字都化開咗。',b:'摸一下'},
+  {k:'相 入 面 有 路',t:'你用手指掃過第一張。\n腳下嘅石屎路，慢慢浮出嚟。',b:'行入去'}
 ];
 var istep=0, intro=document.getElementById('intro');
 var ikick=document.getElementById('ikick'), ilead=document.getElementById('ilead'), go=document.getElementById('go');
@@ -952,7 +984,7 @@ go.onclick=function(){
   started=true;
   el.hud.classList.add('on');
   coachStep=0; coach('☝ 點 地 下 ， 行 過 去');
-  setTimeout(function(){ say('走廊盡頭有一道門。'); },700);
+  setTimeout(function(){ say('第一張相。雨聲先到。'); },700);
 };
 
 el.again.onclick=function(){ boot(); };
