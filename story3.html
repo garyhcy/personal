@@ -681,13 +681,13 @@ function updateSlots(){
     el.slots[i].style.backgroundImage=got?'url('+PHOTO[keys[i]]+')':'none';
   }
   var n=photoCount();
-  el.obj.textContent = n>=4 ? '返 屋 企' : '門 後 面 · '+n+' / 4';
+  el.obj.textContent = n>=4 ? '返 屋 企' : '令 四 張 相 清 楚 · '+n+' / 4';
   el.obj.classList.toggle('ready',n>=4);
 }
 function showPhoto(k){
   el.clueGlyph.innerHTML='<img src="'+PHOTO[k]+'" style="width:132px;height:96px;object-fit:cover;border-radius:3px;border:1px solid rgba(243,193,120,.35)">';
-  el.clueTxt.textContent=PHOTO_T[k];
-  el.clueKick.textContent='其 中 一 張 相';
+  el.clueTxt.textContent=PHOTO_T[k]+'\n（相清楚咗一格）';
+  el.clueKick.textContent='呢 一 格 清 楚 了';
   el.clue.classList.add('on');
   setTimeout(function(){ el.clue.classList.remove('on'); },2600);
   blip(520,.10);
@@ -887,7 +887,7 @@ function finish(){
   el.hud.classList.remove('on');
   resetEnd();
   el.end.classList.add('on');
-  el.p1.textContent='你帶返四張相，擺喺桌上。';
+  el.p1.textContent='四張相都清楚了。';
   el.p2.textContent='「呢四張相，係我一直想去嘅地方。\n你揀一張，我哋一齊去。」';
   setTimeout(function(){ el.frames[0].classList.add('on'); },240);
   setTimeout(function(){ el.frames[1].classList.add('on'); },460);
@@ -914,7 +914,7 @@ function choose(k){
   blip(523,.07);
   setTimeout(function(){ el.endCity.textContent=city.n; el.endCity.classList.add('on'); },1000);
   setTimeout(function(){
-    el.endLine.textContent='你揀咗'+city.pick+'。\n我哋 12 月，去'+city.n+'。\n三晚，我帶你行。';
+    el.endLine.textContent='你揀咗'+city.pick+'。\n呢度係'+city.n+'。\n我哋 12 月去，三晚。';
     el.endLine.classList.add('on');
   },1800);
   setTimeout(function(){ el.endSmall.textContent='你今晚停低咗 '+state.stopped+' 次'; el.endSmall.classList.add('on'); },2700);
@@ -925,7 +925,8 @@ function choose(k){
 var INTRO=[
   {k:'一 把 鎖 匙',t:'你喺門口企咗一陣。',b:'開門'},
   {k:'一 把 鎖 匙',t:'鎖匙係佢寄嚟嘅。\n信封上面冇寫名，只有一個地址。',b:'入去'},
-  {k:'冇 人 喺 屋 企',t:'屋入面好空。\n窗邊有四張相，\n相入面嘅地方，你都冇去過。',b:'出去行下'}
+  {k:'冇 人 喺 屋 企',t:'屋入面好空。\n窗邊有四張相，\n四張都褪色到剩返一片光。',b:'摸一下'},
+  {k:'相 入 面 有 路',t:'你用手指掃過第一張相。\n腳下嘅石屎路，慢慢浮出嚟。',b:'行入去'}
 ];
 var istep=0, intro=document.getElementById('intro');
 var ikick=document.getElementById('ikick'), ilead=document.getElementById('ilead'), go=document.getElementById('go');
