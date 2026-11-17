@@ -150,7 +150,7 @@
   #endKept{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;max-width:340px;margin:0 auto 18px}
   #endKept .chip{animation:chipIn .5s both}
   #endKept .chip s{text-decoration:none;font-size:9.5px;color:rgba(243,193,120,.8);letter-spacing:.06em}
-  #endCalc{font-size:11px;letter-spacing:.14em;color:rgba(237,230,216,.42);margin-bottom:20px;text-align:center;
+  #endCalc{font-size:11px;letter-spacing:.14em;color:rgba(237,230,216,.42);margin-bottom:20px;text-align:center;white-space:pre-line;line-height:1.9;
     opacity:0;transition:opacity .6s}
   #endCalc.on{opacity:1}
   #endCity{font-size:36px;letter-spacing:.32em;margin:14px 0 2px;opacity:0;
@@ -922,7 +922,11 @@ function finish(){
     .sort(function(a,b){ return (state.counts[b]||0)-(state.counts[a]||0); })
     .map(function(x){ return CITIES[x].n+' '+state.counts[x]; }).join('  ·  ');
 
-  setTimeout(function(){ el.endCalc.textContent=tally; el.endCalc.classList.add('on'); },700);
+  var top=Math.max(state.counts.sh||0,state.counts.tw||0,state.counts.jp||0,state.counts.bj||0);
+  var ties=['sh','tw','jp','bj'].filter(function(x){ return (state.counts[x]||0)===top; });
+  var tieNote=(ties.length>1 && top>0)
+    ? tally+'\n\n幾邊一樣多，就以你最先停低嗰樣為準。' : tally;
+  setTimeout(function(){ el.endCalc.textContent=tieNote; el.endCalc.classList.add('on'); },700);
   setTimeout(function(){ el.endCity.textContent=city.n; el.endCity.classList.add('on'); blip(523,.07); },1500);
   setTimeout(function(){ el.endLine.textContent=city.line; el.endLine.classList.add('on'); },2300);
   setTimeout(function(){ el.again.classList.add('on'); },3000);
