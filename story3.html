@@ -191,12 +191,12 @@
 </div></div>
 <div id="exp"><div id="expBox">
   <canvas id="expShot" width="640" height="300"></canvas>
-  <div id="expKick">呢 度</div>
+  <div id="expKick">呢 段 回 憶</div>
   <div id="expTitle"></div>
   <div id="expTx"></div>
   <div id="expActs">
-    <button class="btn sm" id="expKeep">記 住 呢 度</button>
-    <button class="btn sm ghost" id="expSkip">算 數</button>
+    <button class="btn sm" id="expKeep">記 住</button>
+    <button class="btn sm ghost" id="expSkip">行 過</button>
   </div>
 </div></div>
 <button id="mute">♪</button>
@@ -250,32 +250,32 @@ var WATER={x0:0,x1:560,y0:648};
 
 var SPOTS=[
   {zone:'a',x:255,y:300,art:'lantern',label:'紅燈籠',city:'sh',
-   line:'燈籠紅得好舊，紅到似退咗色。\n雨打落上面，燈影一格一格咁搖。'},
+   line:'晚上成條街都係紅。\n我哋會行到最尾，你一路抬頭影相。\n返到酒店你會話：「頭先條街好靚。」'},
   {zone:'a',x:415,y:352,art:'bowl',label:'熱湯麵',city:'tw',
-   line:'布簾下面漏出熱氣，湯滾緊。\n我企喺簷下，聞到蔥同豬油。'},
+   line:'路邊一檔，湯仲滾緊。\n我哋會坐喺膠凳，食到出汗。\n你會叫我食慢啲，自己食得快。'},
   {zone:'a',x:330,y:432,art:'photo',label:'雨打簷篷',city:'sh',
-   line:'雨打鐵皮，响得好實。\n有人喺裡面熄咗燈，隔一陣又開返。'},
+   line:'雨打鐵皮，响到聽唔到對方講嘢。\n我哋會企喺同一塊簷下，等雨細。\n你會話：「等多陣先走。」'},
 
   {zone:'b',x:1216,y:196,art:'bath',label:'蒸氣',city:'jp',
-   line:'行到呢度，耳朵突然靜咗。\n蒸氣由門縫鑽出嚟，暖嘅。'},
+   line:'門一開，蒸氣沖出嚟。\n我哋會乜都唔講，浸到手指皺。\n出嚟嗰陣你會話好舒服，然後話肚餓。'},
   {zone:'b',x:1146,y:330,art:'lantern',label:'石階',city:'bj',
-   line:'石階一級一級，燈隔幾級先有一盞。\n我行到一半，停低聽水聲。'},
+   line:'一級一級，燈隔幾級先有一盞。\n我哋會行到一半停低，聽下面嘅人聲。\n你會話：「呢度好似舊戲。」'},
   {zone:'b',x:1182,y:428,art:'photo',label:'松樹',city:'jp',
-   line:'松樹好高，風一過，成片山都响。\n空氣有陣樹脂味，凍嘅。'},
+   line:'風一過，成片山都响。\n我哋會攞住熱飲，行到凍都要行。\n你會話：「呢度空氣好唔同。」'},
 
   {zone:'c',x:300,y:596,art:'lantern',label:'浮燈',city:'jp',
-   line:'水面有燈，一路飄，飄到睇唔到。\n對岸有人放緊，冇樣。'},
+   line:'水面全部係燈，一路飄。\n我哋會買一盞，寫低一樣嘢，然後放走。\n你會問我寫咗咩，我唔講。'},
   {zone:'c',x:452,y:632,art:'boat',label:'小船',city:'sh',
-   line:'隻船纜喺岸邊，纜繩鬆鬆地。\n我想坐一陣，唔講嘢。'},
+   line:'隻船纜喺岸邊，纜繩鬆鬆地。\n我哋會坐喺石級，腳吊喺水上面。\n你會話唔想走，但會先企起身。'},
   {zone:'c',x:188,y:606,art:'photo',label:'河水',city:'bj',
-   line:'河水拍石堤，一下一下，唔急。\n伸手去掂，凍到縮手。'},
+   line:'水拍石堤，一下一下。\n我哋會掟石仔，數彈幾下。\n你會贏，然後話係我讓賽。'},
 
   {zone:'d',x:930,y:642,art:'stall',label:'檔口',city:'bj',
-   line:'鑊氣撐起半條街。\n有人叫賣，有人同隔籬檔嗌交，然後一齊笑。'},
+   line:'鑊氣撐起半條街。\n我哋會一人買一樣，交換食。\n你會搶我嗰串，話好食啲。'},
   {zone:'d',x:1082,y:722,art:'sugar',label:'糖',city:'tw',
-   line:'買咗一枝糖，唔捨得食。\n拎住行咗半條街，仲暖。'},
+   line:'一枝糖，唔捨得食。\n我哋會一人一口，行到溶。\n你會話：「下次買兩枝。」'},
   {zone:'d',x:1220,y:858,art:'photo',label:'人聲',city:'tw',
-   line:'全部都講得好快，我聽唔明。\n但佢哋笑嘅位，我大概明。'}
+   line:'四周都講得好快，聽唔明。\n我哋會跟住人群行，行到唔知邊。\n你會話：「亂行都幾好。」'}
 ];
 SPOTS.forEach(function(s,i){ s.i=i; });
 
@@ -492,7 +492,7 @@ function drawSpots(){
 
 function drawHouse(){
   var p=w2s(HOUSE.x,HOUSE.y);
-  var ready=keptCount()>=3&&!state.ended;
+  var ready=keptCount()>=5&&!state.ended;
   var fl=0.86+0.14*Math.sin(t*1.7);
   glow(ctx,p.x,p.y,ready?74:46, ready?('rgba(243,193,120,'+(0.30*fl)+')'):('rgba(243,193,120,'+(0.14*fl)+')'));
   var hp=ctx.createRadialGradient(p.x,p.y+30,0,p.x,p.y+30,ready?46:30);
@@ -560,7 +560,7 @@ function drawWaypoints(){
     if(s.clue===undefined||state.done[s.i]) continue;
     list.push({x:s.x,y:s.y,c:ZONES[s.zone].c,g:'✉'});
   }
-  if(keptCount()>=3&&!state.ended){ list=[{x:HOUSE.x,y:HOUSE.y,c:'#F3C178',g:'⌂'}]; }
+  if(keptCount()>=5&&!state.ended){ list=[{x:HOUSE.x,y:HOUSE.y,c:'#F3C178',g:'⌂'}]; }
   if(!list.length) return;
   list.sort(function(a,b){
     return Math.hypot(a.x-state.p.x,a.y-state.p.y)-Math.hypot(b.x-state.p.x,b.y-state.p.y);
@@ -640,8 +640,8 @@ function updateKept(){
   var list=state.kept.slice(-5).map(function(k){ return chipHTML(k); }).join('');
   if(state.kept.length>5) list='<span class="chip"><i>+</i>'+(state.kept.length-5)+'</span>'+list;
   box.innerHTML=list;
-  el.obj.textContent='停 低 ， 睇 吓 你 鍾 意 邊 樣 · '+state.kept.length;
-  el.obj.classList.toggle('ready',state.kept.length>=3);
+  el.obj.textContent = state.kept.length>=5 ? '夠 了 · 行 返 屋 企' : ('集 夠 回 憶 · '+state.kept.length+' / 5');
+  el.obj.classList.toggle('ready',state.kept.length>=5);
 }
 
 /* 音 */
@@ -657,7 +657,7 @@ function blip(freq,vol){
   o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime+0.72);
 }
 document.getElementById('expKeep').addEventListener('click',function(e){ e.stopPropagation(); keepSpot(); });
-document.getElementById('expSkip').addEventListener('click',function(e){ e.stopPropagation(); closeExp(); });
+document.getElementById('expSkip').addEventListener('click',function(e){ e.stopPropagation(); skipSpot(); });
 document.getElementById('mute').onclick=function(){
   soundOn=!soundOn; this.classList.toggle('off',!soundOn); this.textContent=soundOn?'♪':'♪̸';
 };
@@ -749,6 +749,11 @@ function closeExp(){
   state.paused=false;
   curSpot=-1;
 }
+function skipSpot(){
+  var i=curSpot;
+  closeExp();
+  if(i>=0) say('行過。');
+}
 function keepSpot(){
   var i=curSpot; if(i<0){ closeExp(); return; }
   var s=SPOTS[i];
@@ -764,19 +769,16 @@ function keepSpot(){
   closeExp();
   say('記住咗。');
   if(state.kept.length===1){
-    setTimeout(function(){ coach('再 行 多 幾 處'); },900);
+    setTimeout(function(){ coach('再 集 多 幾 段'); },900);
     setTimeout(function(){ coach(null); },4200);
   }
-  if(state.kept.length===3&&!state.hintDone){
+  if(state.kept.length===5&&!state.hintDone){
     state.hintDone=true;
-    setTimeout(function(){ coach('再 行 或 返 屋 企'); },900);
-    setTimeout(function(){ coach(null); },4200);
+    setTimeout(function(){ toast('夠 了 · 返 得 屋 企'); },900);
+    setTimeout(function(){ coach('⌂ 行 返 屋 企'); },1800);
+    setTimeout(function(){ coach(null); },7000);
   }
-  if(state.kept.length>=6&&!state.walkHint){
-    state.walkHint=true;
-    setTimeout(function(){ coach('⌂ 行 夠 就 返 屋 企'); },900);
-    setTimeout(function(){ coach(null); },5200);
-  }
+
 }
 
 function clampCam(){
@@ -929,7 +931,7 @@ function finish(){
   el.hud.classList.remove('on');
   resetEnd();
   el.end.classList.add('on');
-  el.endKick.textContent='你 今 晚 停 低 咗 '+state.kept.length+' 次';
+  el.endKick.textContent='你 收 集 咗 '+state.kept.length+' 段 回 憶';
 
   // 逐件列出她揀嘅嘢
   el.endKept.innerHTML=state.kept.map(function(i,idx){
@@ -958,7 +960,7 @@ function finish(){
     ? tally+'\n\n幾邊一樣多，就以你最先停低嗰樣為準。' : tally;
   setTimeout(function(){ el.endCalc.textContent=tieNote; el.endCalc.classList.add('on'); },800);
 
-  setTimeout(function(){ el.endLead.textContent='你停低最多嘅，就係我哋去嘅地方。'; el.endLead.classList.add('on'); },1300);
+  setTimeout(function(){ el.endLead.textContent='呢啲回憶，全部喺同一個城市。'; el.endLead.classList.add('on'); },1300);
   setTimeout(function(){ el.endCity.textContent=city.n; el.endCity.classList.add('on'); blip(523,.07); },2000);
   setTimeout(function(){ el.endLine.textContent=city.line; el.endLine.classList.add('on'); },2700);
 
@@ -967,7 +969,8 @@ function finish(){
 
 /* ============ 開場 ============ */
 var INTRO=[
-  {k:'今 晚',t:'冇目的地。\n你行前面，我跟住。',b:'行'}
+  {k:'醒 之 後',t:'你企喺一條唔識嘅街。\n冇人，只有燈、雨、同遠處嘅聲。\n你記得一件事：集夠「你鍾意嘅回憶」，就返得屋企。',b:'繼 續'},
+  {k:'點 集',t:'邊度都可以停。\n啱你嘅，記住；唔啱嘅，行過。',b:'行'}
 ];
 var istep=0, intro=document.getElementById('intro');
 var ikick=document.getElementById('ikick'), ilead=document.getElementById('ilead'), go=document.getElementById('go');
