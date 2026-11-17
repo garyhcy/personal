@@ -702,12 +702,18 @@ function handleTap(sx,sy){
 }
 
 var curSpot=-1;
-var shotCv=null, shotCtx=null;
+var shotCv=null, shotCtx=null, shotSpot=null;
 function paintExpShot(s){
+  shotSpot=s;
   if(!shotCv){ shotCv=document.getElementById('expShot'); shotCtx=shotCv.getContext('2d'); }
   var g=shotCtx, CW=shotCv.width, CH=shotCv.height;
   g.clearRect(0,0,CW,CH);
   var sc=IMG['scene-'+s.zone];
+  if(sc && !(sc.complete&&sc.naturalWidth)){
+    if(!sc.__hooked){ sc.__hooked=true;
+      sc.addEventListener('load',function(){ if(shotSpot) paintExpShot(shotSpot); });
+    }
+  }
   if(sc&&sc.complete&&sc.naturalWidth){
     var iw=sc.naturalWidth, ih=sc.naturalHeight;
     var tr=CW/CH, sr=iw/ih, cw,ch,cx,cy;
@@ -721,7 +727,7 @@ function paintExpShot(s){
   }
   // 壓暗邊
   var vg=g.createRadialGradient(CW/2,CH*0.52,CH*0.2,CW/2,CH*0.52,CW*0.62);
-  vg.addColorStop(0,'rgba(6,9,14,0)'); vg.addColorStop(1,'rgba(6,9,14,.85)');
+  vg.addColorStop(0,'rgba(6,9,14,0)'); vg.addColorStop(1,'rgba(6,9,14,.62)');
   g.fillStyle=vg; g.fillRect(0,0,CW,CH);
   // 暖光點
   var lg=g.createRadialGradient(CW/2,CH*0.62,4,CW/2,CH*0.62,CW*0.30);
