@@ -78,6 +78,23 @@
     pointer-events:none;white-space:nowrap}
   #toast.on{opacity:1;transform:translateX(-50%)}
 
+  #exp{position:fixed;inset:0;z-index:12;display:flex;align-items:flex-end;justify-content:center;
+    background:rgba(4,7,12,0);opacity:0;pointer-events:none;transition:opacity .4s,background .4s}
+  #exp.on{opacity:1;pointer-events:auto;background:rgba(4,7,12,.46)}
+  #expBox{width:min(92vw,420px);margin-bottom:calc(26px + env(safe-area-inset-bottom));
+    padding:22px 22px 18px;border-radius:16px;text-align:center;
+    background:linear-gradient(170deg,rgba(26,31,42,.98),rgba(11,15,22,.99));
+    border:1px solid rgba(243,193,120,.30);
+    box-shadow:0 24px 70px rgba(0,0,0,.8);
+    transform:translateY(16px);transition:transform .4s}
+  #exp.on #expBox{transform:none}
+  #expKick{font-size:10px;letter-spacing:.34em;color:rgba(243,193,120,.75);margin-bottom:10px}
+  #expTitle{font-size:20px;letter-spacing:.10em;color:#F3C178;margin-bottom:12px}
+  #expTx{font-size:14.5px;line-height:2.0;color:#DDD4C4;white-space:pre-line;margin-bottom:20px}
+  #expActs{display:flex;gap:10px;justify-content:center}
+  .btn.sm{margin:0;padding:11px 22px;font-size:13.5px;letter-spacing:.12em}
+  .btn.sm.ghost{border-color:rgba(237,230,216,.20);color:rgba(237,230,216,.6);background:transparent}
+
   #mute{position:fixed;top:calc(10px + env(safe-area-inset-top));right:12px;z-index:10;
     width:34px;height:34px;border-radius:50%;border:1px solid rgba(237,230,216,.16);
     background:rgba(8,11,18,.6);color:rgba(237,230,216,.7);font-size:13px;
@@ -116,6 +133,9 @@
   #end.choosing .frame:hover{box-shadow:0 0 0 1px rgba(243,193,120,.7),0 8px 26px rgba(0,0,0,.65)}
   .frame.sel{transform:scale(1.16);box-shadow:0 0 0 1px rgba(243,193,120,.9),0 14px 40px rgba(0,0,0,.7),0 0 30px rgba(243,193,120,.22)}
   .frame.dim{opacity:.22}
+  .frame.fog{opacity:.30;pointer-events:none}
+  .frame.fog i{filter:blur(3px) saturate(.4) brightness(.7)}
+  .frame.fog b{color:rgba(237,230,216,.3)}
   .f-a i{background:url(assets/photo-a.jpg) center/cover no-repeat}
   .f-b i{background:url(assets/photo-b.jpg) center/cover no-repeat}
   .f-c i{background:url(assets/photo-c.jpg) center/cover no-repeat}
@@ -159,6 +179,15 @@
   <div id="clueKick">搵 到 一 樣</div>
   <div id="clueGlyph">✉</div>
   <div id="clueTxt"></div>
+</div></div>
+<div id="exp"><div id="expBox">
+  <div id="expKick">呢 度</div>
+  <div id="expTitle"></div>
+  <div id="expTx"></div>
+  <div id="expActs">
+    <button class="btn sm" id="expKeep">記 住 呢 度</button>
+    <button class="btn sm ghost" id="expSkip">算 數</button>
+  </div>
 </div></div>
 <button id="mute">♪</button>
 
@@ -212,21 +241,33 @@ var HOUSE={x:775,y:520};
 var WATER={x0:0,x1:560,y0:648};
 
 var SPOTS=[
-  {zone:'a',x:255,y:300,art:'lantern',label:'紅燈籠',line:'啲燈紅得好舊，好似細個屋企樓下嗰間。'},
-  {zone:'a',x:415,y:352,art:'bowl',label:'麵檔',line:'呢條街落過雨。地下仲反光。'},
-  {zone:'a',x:330,y:432,art:'photo',label:'一張相',clue:'a',line:'一張相。雨夜，紅燈籠，一條好窄嘅街。'},
+  {zone:'a',x:255,y:300,art:'lantern',label:'紅燈籠',
+   line:'啲燈紅得好舊，好似細個屋企樓下嗰間。\n雨落喺簷篷上面，一格一格咁响。'},
+  {zone:'a',x:415,y:352,art:'bowl',label:'麵檔',
+   line:'呢條街落過雨，地下仲反光。\n有檔嘢食仲開住，熱氣由布簾下面漏出嚟。'},
+  {zone:'a',x:330,y:432,art:'photo',label:'一格光',clue:'a',
+   line:'呢一格係雨。紅燈籠，一條好窄嘅街。\n我行入去，鞋底濕咗。'},
 
-  {zone:'b',x:1216,y:196,art:'bath',label:'澡堂',line:'行到呢度，耳朵突然靜咗。'},
-  {zone:'b',x:1146,y:330,art:'lantern',label:'石階燈',line:'有蒸氣。係澡堂。'},
-  {zone:'b',x:1182,y:428,art:'photo',label:'一張相',clue:'b',line:'一張相。山上面嘅澡堂，門口有蒸氣。'},
+  {zone:'b',x:1216,y:196,art:'bath',label:'澡堂',
+   line:'行到呢度，耳朵突然靜咗。\n遠處有蒸氣，慢慢升上樹頂。'},
+  {zone:'b',x:1146,y:330,art:'lantern',label:'石階燈',
+   line:'石階一級一級，燈隔幾級先有一盞。\n我行到一半，停低聽水聲。'},
+  {zone:'b',x:1182,y:428,art:'photo',label:'一格光',clue:'b',
+   line:'呢一格有蒸氣。山上面嘅澡堂。\n玻璃上面一層霧，乜都睇唔清。'},
 
-  {zone:'c',x:300,y:596,art:'lantern',label:'水面燈',line:'水面有燈，一路飄。'},
-  {zone:'c',x:452,y:632,art:'boat',label:'小船',line:'我想喺度坐一陣。'},
-  {zone:'c',x:188,y:606,art:'photo',label:'一張相',clue:'c',line:'一張相。河邊，燈浮喺水面。'},
+  {zone:'c',x:300,y:596,art:'lantern',label:'水面燈',
+   line:'水面有燈，一路飄，飄到好遠。\n有人喺對岸放，睇唔到樣。'},
+  {zone:'c',x:452,y:632,art:'boat',label:'小船',
+   line:'隻船纜住喺岸邊，纜繩鬆鬆地。\n我想喺度坐一陣，唔講嘢。'},
+  {zone:'c',x:188,y:606,art:'photo',label:'一格光',clue:'c',
+   line:'呢一格係水。燈浮喺水面，一路飄。\n我伸手去掂，凍嘅。'},
 
-  {zone:'d',x:930,y:642,art:'stall',label:'麵檔',line:'好多聲。有人叫賣，有人笑。'},
-  {zone:'d',x:1082,y:722,art:'sugar',label:'糖',line:'糖。買咗一枝，唔捨得食。'},
-  {zone:'d',x:1220,y:858,art:'photo',label:'一張相',clue:'d',line:'一張相。夜市，帆布下面一盞一盞燈。'}
+  {zone:'d',x:930,y:642,art:'stall',label:'麵檔',
+   line:'好多聲。有人叫賣，有人笑，有人同隔籬檔嗌交。\n鑊氣好重。'},
+  {zone:'d',x:1082,y:722,art:'sugar',label:'糖',
+   line:'糖。買咗一枝，唔捨得食。\n拎住行咗半條街，都仲係暖。'},
+  {zone:'d',x:1220,y:858,art:'photo',label:'一格光',clue:'d',
+   line:'呢一格好熱鬧。帆布下面一盞一盞燈。\n我行到最入，見到有人收檔。'}
 ];
 SPOTS.forEach(function(s,i){ s.i=i; });
 
@@ -247,7 +288,7 @@ var flies=[];
 function newState(){
   return {p:{x:HOUSE.x,y:HOUSE.y+66},face:1,moving:false,tgt:null,
     done:{},seenZone:{},photos:{},stopped:0,counts:{a:0,b:0,c:0,d:0},
-    ended:false,readyToast:false,walk:0};
+    ended:false,readyToast:false,walk:0,paused:false,photos:{}};
 }
 
 function resize(){
@@ -320,162 +361,6 @@ function glyph(art,z){
   }
 }
 
-function drawSpots(){
-  for(var i=0;i<SPOTS.length;i++){
-    var s=SPOTS[i];
-    if(state.done[s.i]) continue;
-    var pulse=0.5+0.5*Math.sin(t*2.0+i*0.8);
-    var isClue=(s.clue!==undefined);
-    var r=isClue?58:44;
-    var gr=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,r);
-    gr.addColorStop(0,'rgba(243,193,120,'+(0.13+pulse*0.12)+')');
-    gr.addColorStop(1,'rgba(243,193,120,0)');
-    ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(s.x,s.y,r,0,Math.PI*2); ctx.fill();
-    // 光柱
-    if(isClue){
-      var bg=ctx.createLinearGradient(0,s.y-90,0,s.y+6);
-      bg.addColorStop(0,'rgba(243,193,120,0)');
-      bg.addColorStop(1,'rgba(243,193,120,'+(0.05+pulse*0.05)+')');
-      ctx.fillStyle=bg; ctx.fillRect(s.x-7,s.y-90,14,96);
-    }
-    // 小圈
-    ctx.strokeStyle='rgba(243,193,120,'+(0.20+pulse*0.24)+')';
-    ctx.lineWidth=1;
-    ctx.beginPath(); ctx.arc(s.x,s.y+12,13+pulse*2,0,Math.PI*2); ctx.stroke();
-    ctx.save(); ctx.translate(s.x,s.y); ctx.scale(1.15,1.15); glyph(s.art,ZONES[s.zone]); ctx.restore();
-    var d=Math.hypot(state.p.x-s.x,state.p.y-s.y);
-    if(d<330){
-      ctx.font='12px system-ui,-apple-system,sans-serif'; ctx.textAlign='center';
-      ctx.fillStyle='rgba(237,230,216,'+(0.34+pulse*0.22)+')';
-      ctx.fillText(s.label,s.x,s.y+44);
-    }
-  }
-}
-
-function drawHouseGlow(){
-  var ready=photoCount()>=4;
-  var pulse=0.5+0.5*Math.sin(t*1.9);
-  var r=ready?(120+pulse*22):78;
-  var g2=ctx.createRadialGradient(HOUSE.x,HOUSE.y+18,0,HOUSE.x,HOUSE.y+18,r);
-  g2.addColorStop(0,'rgba(243,193,120,'+(ready?0.20+pulse*0.10:0.06)+')');
-  g2.addColorStop(1,'rgba(243,193,120,0)');
-  ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(HOUSE.x,HOUSE.y+18,r,0,Math.PI*2); ctx.fill();
-  if(ready){
-    ctx.font='12px system-ui,-apple-system,sans-serif'; ctx.textAlign='center';
-    ctx.fillStyle='rgba(243,193,120,'+(0.45+pulse*0.4)+')';
-    ctx.fillText('返 屋 企',HOUSE.x,HOUSE.y+96);
-  }
-}
-
-function drawTargetRing(){
-  if(!state.tgt) return;
-  var p=state.pulse||0;
-  var pulse=0.5+0.5*Math.sin(t*4.2);
-  ctx.strokeStyle='rgba(243,193,120,'+(0.16+pulse*0.18)+')';
-  ctx.lineWidth=1.2;
-  ctx.beginPath(); ctx.arc(state.tgt.x,state.tgt.y,9+pulse*4,0,Math.PI*2); ctx.stroke();
-}
-
-function drawPlayer(){
-  var p=state.p, mv=state.moving;
-  var bob=mv?Math.sin(state.walk*0.42)*2.0:Math.sin(t*1.7)*0.7;
-  // 影
-  ctx.save(); ctx.translate(p.x,p.y+2); ctx.scale(1,0.34);
-  var sg=ctx.createRadialGradient(0,0,0,0,0,15);
-  sg.addColorStop(0,'rgba(0,0,0,.5)'); sg.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=sg; ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2); ctx.fill(); ctx.restore();
-  // 身邊暖光
-  var lg=ctx.createRadialGradient(p.x,p.y-24,0,p.x,p.y-24,110);
-  lg.addColorStop(0,'rgba(243,193,120,.10)'); lg.addColorStop(1,'rgba(243,193,120,0)');
-  ctx.fillStyle=lg; ctx.beginPath(); ctx.arc(p.x,p.y-24,110,0,Math.PI*2); ctx.fill();
-  // 角色
-  var im=IMG.girl;
-  if(im.complete&&im.naturalWidth){
-    var hh=92, ww=hh*(im.width/im.height);
-    ctx.save();
-    ctx.translate(p.x,p.y+bob);
-    ctx.scale(state.face,1);
-    ctx.drawImage(im,-ww/2,-hh+4,ww,hh);
-    ctx.restore();
-  }
-}
-
-function drawFlies(){
-  for(var i=0;i<flies.length;i++){
-    var f=flies[i];
-    var x=f.x+Math.sin(t*f.sp+f.ph)*13;
-    var y=f.y+Math.cos(t*f.sp*0.85+f.ph)*9;
-    var a=0.10+0.20*(0.5+0.5*Math.sin(t*2.2+f.ph));
-    ctx.fillStyle='rgba(243,206,140,'+a+')';
-    ctx.beginPath(); ctx.arc(x,y,f.s,0,Math.PI*2); ctx.fill();
-  }
-}
-
-/* ============ 指引 ============ */
-function drawWaypoints(){
-  var list=[];
-  for(var i=0;i<SPOTS.length;i++){
-    var s=SPOTS[i];
-    if(s.clue!==undefined&&!state.done[s.i]) list.push({x:s.x,y:s.y,g:CLUES[s.clue].g});
-  }
-  if(photoCount()>=4&&!state.ended) list.push({x:HOUSE.x,y:HOUSE.y,g:'⌂'});
-  var shown=0;
-  for(var k=0;k<list.length&&shown<3;k++){
-    var p=w2s(list[k].x,list[k].y);
-    var padX=34,padTop=96,padBot=64;
-    if(p.x>padX&&p.x<VW-padX&&p.y>padTop&&p.y<VH-padBot) continue;
-    var dx=p.x-VW/2, dy=p.y-VH/2;
-    var ang=Math.atan2(dy,dx);
-    var rx=VW/2-padX, ry=VH/2-(padTop+VH-padBot)/2+8;
-    var ax=VW/2+Math.cos(ang)*rx, ay=VH/2+Math.sin(ang)*ry;
-    ctx.save();
-    ctx.translate(ax,ay);
-    ctx.globalAlpha=0.55+0.25*Math.sin(t*2.4+k);
-    ctx.fillStyle='rgba(10,14,22,.72)';
-    ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='rgba(243,193,120,.55)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2); ctx.stroke();
-    ctx.rotate(ang);
-    ctx.fillStyle='rgba(243,193,120,.95)';
-    ctx.beginPath(); ctx.moveTo(20,0); ctx.lineTo(11,-5.4); ctx.lineTo(11,5.4); ctx.closePath(); ctx.fill();
-    ctx.rotate(-ang);
-    ctx.font='11px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle='#F3C178'; ctx.fillText(list[k].g,0,0.5);
-    ctx.restore();
-    shown++;
-  }
-}
-
-/* ============ 繪製 ============ */
-function grade(){
-  var g2=ctx.createRadialGradient(VW*0.5,VH*0.42,VH*0.16,VW*0.5,VH*0.46,VH*1.0);
-  g2.addColorStop(0,'rgba(0,0,0,0)');
-  g2.addColorStop(0.62,'rgba(4,6,12,.30)');
-  g2.addColorStop(1,'rgba(2,3,7,.82)');
-  ctx.fillStyle=g2; ctx.fillRect(0,0,VW,VH);
-  var warm=ctx.createLinearGradient(0,0,0,VH);
-  warm.addColorStop(0,'rgba(90,110,160,.05)');
-  warm.addColorStop(1,'rgba(140,90,40,.05)');
-  ctx.fillStyle=warm; ctx.fillRect(0,0,VW,VH);
-}
-
-function render(){
-  ctx.setTransform(DPR,0,0,DPR,0,0);
-  ctx.fillStyle='#080B12'; ctx.fillRect(0,0,VW,VH);
-  ctx.save();
-  ctx.translate(VW/2,VH/2); ctx.scale(cam.scale,cam.scale); ctx.translate(-cam.x,-cam.y);
-  if(IMG.map.complete&&IMG.map.naturalWidth) ctx.drawImage(IMG.map,0,0,W,H);
-  else { ctx.fillStyle='#131A26'; ctx.fillRect(0,0,W,H); }
-  drawSpots();
-  drawHouseGlow();
-  drawTargetRing();
-  if(state) drawPlayer();
-  drawFlies();
-  ctx.restore();
-  grade();
-  if(started&&state) drawWaypoints();
-}
-/* ============ 繪圖 ============ */
 function glow(g,x,y,r,col){
   var gr=g.createRadialGradient(x,y,0,x,y,r);
   gr.addColorStop(0,col); gr.addColorStop(1,'rgba(0,0,0,0)');
@@ -489,56 +374,47 @@ function softShadow(g,x,y,rx,ry,a){
   gr.addColorStop(1,'rgba(0,0,0,0)');
   g.fillStyle=gr; g.beginPath(); g.arc(0,0,rx,0,Math.PI*2); g.fill(); g.restore();
 }
-
 function grade(){
-  // 冷色調
   ctx.fillStyle='rgba(10,17,30,.20)'; ctx.fillRect(0,0,VW,VH);
-  // 邊暗
   var g2=ctx.createRadialGradient(VW/2,VH*0.46,VH*0.20,VW/2,VH*0.46,Math.max(VW,VH)*0.78);
   g2.addColorStop(0,'rgba(4,6,11,0)');
   g2.addColorStop(0.72,'rgba(4,6,11,.30)');
   g2.addColorStop(1,'rgba(4,6,11,.78)');
   ctx.fillStyle=g2; ctx.fillRect(0,0,VW,VH);
 }
-
 function drawSpots(){
   for(var i=0;i<SPOTS.length;i++){
-    var s=SPOTS[i], d=state.done[s.i];
+    var s=SPOTS[i];
     var p=w2s(s.x,s.y);
-    if(p.x<-120||p.x>VW+120||p.y<-160||p.y>VH+160) continue;
-    var z=ZONES[s.zone];
-    var near=Math.hypot(state.p.x-s.x,state.p.y-s.y)<300;
-    if(!d){
-      var pulse=0.72+0.28*Math.sin(t*2.2+i);
-      glow(ctx,s.x*0+ (p.x),p.y, 34*pulse, hexA(z.c,0.20));
-      if(s.clue!==undefined){
-        // 光柱
-        var bh=150;
-        var lg=ctx.createLinearGradient(0,p.y-bh,0,p.y+8);
-        lg.addColorStop(0,'rgba(243,193,120,0)');
-        lg.addColorStop(0.7,'rgba(243,193,120,.16)');
-        lg.addColorStop(1,'rgba(243,193,120,.34)');
-        ctx.fillStyle=lg;
-        ctx.beginPath();
-        ctx.moveTo(p.x-7,p.y+6); ctx.lineTo(p.x-1.5,p.y-bh);
-        ctx.lineTo(p.x+1.5,p.y-bh); ctx.lineTo(p.x+7,p.y+6);
-        ctx.closePath(); ctx.fill();
-      }
-      ctx.fillStyle='rgba(255,236,200,'+(0.66*pulse)+')';
-      ctx.beginPath(); ctx.arc(p.x,p.y,2.6,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle=hexA(z.c,0.42); ctx.lineWidth=1;
-      ctx.beginPath(); ctx.arc(p.x,p.y,8.5+2.5*Math.sin(t*2.2+i),0,Math.PI*2); ctx.stroke();
+    if(p.x<-140||p.x>VW+140||p.y<-180||p.y>VH+180) continue;
+    var z=ZONES[s.zone], done=!!state.done[s.i];
+    var pulse=0.70+0.30*Math.sin(t*2.0+i*0.7);
+    var sc=cam.scale*1.15;
+    if(!done){
+      glow(ctx,p.x,p.y,52*pulse,hexA(z.c,0.26));
+      // 地釘
+      ctx.strokeStyle=hexA(z.c,0.5); ctx.lineWidth=1.1;
+      ctx.beginPath(); ctx.ellipse(p.x,p.y+24,11,4,0,0,Math.PI*2); ctx.stroke();
+      // 底板
+      ctx.fillStyle='rgba(8,11,18,.68)';
+      ctx.beginPath(); ctx.arc(p.x,p.y,21,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=hexA(z.c,0.6); ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.arc(p.x,p.y,21,0,Math.PI*2); ctx.stroke();
+      // 圖示
+      ctx.save();
+      ctx.translate(p.x,p.y+3); ctx.scale(sc*0.78,sc*0.78);
+      glyph(s.art,z);
+      ctx.restore();
     }else{
-      glow(ctx,p.x,p.y,22,hexA(z.c,0.12));
-      ctx.fillStyle='rgba(237,230,216,.30)';
-      ctx.beginPath(); ctx.arc(p.x,p.y,2,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(237,230,216,.26)';
+      ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill();
     }
-    if(near||d){
-      ctx.font='11px system-ui,-apple-system,"PingFang HK",sans-serif';
-      ctx.textAlign='center';
-      ctx.fillStyle=d?'rgba(237,230,216,.35)':'rgba(237,230,216,.72)';
-      ctx.fillText(s.label,p.x,p.y+26);
-    }
+    ctx.font=(done?'10px':'11.5px')+' system-ui,-apple-system,"PingFang HK",sans-serif';
+    ctx.textAlign='center';
+    ctx.fillStyle=done?'rgba(237,230,216,.24)':'rgba(243,236,224,.9)';
+    ctx.shadowColor='rgba(0,0,0,.95)'; ctx.shadowBlur=7;
+    ctx.fillText(s.label,p.x,p.y+40);
+    ctx.shadowBlur=0;
   }
 }
 
@@ -651,7 +527,10 @@ var el={cap:document.getElementById('cap'),hud:document.getElementById('hud'),
   endCity:document.getElementById('endCity'),endLine:document.getElementById('endLine'),
   endSmall:document.getElementById('endSmall'),again:document.getElementById('again'),
   frames:[].map.call(document.querySelectorAll('.frame'),function(f){return f;}),
-  slots:[document.getElementById('s0'),document.getElementById('s1'),document.getElementById('s2'),document.getElementById('s3')]};
+  slots:[document.getElementById('s0'),document.getElementById('s1'),document.getElementById('s2'),document.getElementById('s3')],
+  exp:document.getElementById('exp'),expTitle:document.getElementById('expTitle'),
+  expTx:document.getElementById('expTx'),expKeep:document.getElementById('expKeep'),
+  expSkip:document.getElementById('expSkip'),expKick:document.getElementById('expKick')};
 
 var capT=null;
 function say(txt,ms){
@@ -722,9 +601,9 @@ function walkTo(x,y){
   state.tgt={x:p.x,y:p.y};
 }
 function handleTap(sx,sy){
-  if(!started||state.ended) return;
+  if(!started||state.ended||state.paused) return;
   var w=s2w(sx,sy);
-  if(photoCount()>=4 && Math.hypot(w.x-HOUSE.x,w.y-HOUSE.y)<140){
+  if(photoCount()>=1 && Math.hypot(w.x-HOUSE.x,w.y-HOUSE.y)<140){
     pending=-2; walkTo(HOUSE.x,HOUSE.y+56); return;
   }
   var best=-1,bd=1e9;
@@ -745,29 +624,54 @@ function handleTap(sx,sy){
   walkTo(w.x,w.y);
 }
 
+var curSpot=-1;
 function collect(i){
   var s=SPOTS[i];
   if(!s||state.done[s.i]) return;
+  curSpot=i;
+  el.expTitle.textContent=s.label;
+  el.expTx.textContent=s.line+ (s.clue?'\n（呢一格，係其中一張相嘅一部分。）':'');
+  el.expKick.textContent=ZONES[s.zone].n;
+  el.exp.classList.add('on');
+  state.paused=true;
+  blip(392,.04);
+}
+function closeExp(){
+  el.exp.classList.remove('on');
+  state.paused=false;
+  curSpot=-1;
+}
+function keepSpot(){
+  var i=curSpot; if(i<0){ closeExp(); return; }
+  var s=SPOTS[i];
   state.done[s.i]=true;
   state.stopped++;
   state.counts[s.zone]++;
   if(state.order.indexOf(s.zone)<0) state.order.push(s.zone);
-  blip(s.clue?660:440,.055);
-  if(navigator.vibrate) navigator.vibrate(s.clue?18:8);
-  if(s.line) say(s.line);
-  if(s.clue){
-    state.photos[s.clue]=true;
-    updateSlots();
-    showPhoto(s.clue);
-    if(coachStep<2){ coachStep=2; setTimeout(function(){ coach(null); },3000); }
+  var newly=!state.photos[s.zone];
+  state.photos[s.zone]=true;
+  updateSlots();
+  blip(660,.06);
+  if(navigator.vibrate) navigator.vibrate(16);
+  closeExp();
+  if(newly){
+    showPhoto(s.zone);
+    toast('「'+ZONES[s.zone].n+'」嗰張相，清楚咗');
+    if(coachStep<2){ coachStep=2; }
+  }else{
+    say('記住咗。');
   }
-  if(coachStep===0){ coachStep=1; coach('☝ 搵發光嘅嘢 — 一共四張相'); }
   if(photoCount()>=4&&!state.readyToast){
     state.readyToast=true;
-    setTimeout(function(){ toast('四張相齊了 · 返屋企'); coach('⌂ 行返屋企'); },900);
-    setTimeout(function(){ coach(null); },5200);
+    setTimeout(function(){ toast('四張相都清楚了 · 返屋企'); coach('⌂ 行返屋企'); },1500);
+    setTimeout(function(){ coach(null); },6000);
+  }else if(!state.readyToast&&photoCount()>0){
+    setTimeout(function(){ if(!state.ended) coach('⌂ 想走嘅話，行返屋企'); },2200);
+    setTimeout(function(){ coach(null); },6200);
   }
 }
+el.expKeep.onclick=function(){ keepSpot(); };
+el.expSkip.onclick=function(){ closeExp(); say('行過就算。'); };
 
 /* ============ 迴圈 ============ */
 function clampCam(){
@@ -846,7 +750,7 @@ function render(dt){
 function frame(ts){
   var dt=Math.min(0.05,(ts-last)/1000||0.016); last=ts;
   t+=dt;
-  try{ if(started&&!state.ended) update(dt); }catch(e){ if(window.__err) window.__err.push('update:'+e.message); }
+  try{ if(started&&!state.ended&&!state.paused) update(dt); }catch(e){ if(window.__err) window.__err.push('update:'+e.message); }
   try{ render(dt); }catch(e){ if(window.__err) window.__err.push('render:'+e.message); }
   requestAnimationFrame(frame);
 }
@@ -878,7 +782,7 @@ function resetEnd(){
   el.endSmall.textContent=''; el.endSmall.classList.remove('on');
   el.paper.classList.remove('on');
   el.again.classList.remove('on');
-  el.frames.forEach(function(f){ f.classList.remove('on','sel','dim'); });
+  el.frames.forEach(function(f){ f.classList.remove('on','sel','dim','fog'); });
 }
 function finish(){
   if(state.ended) return;
@@ -887,12 +791,15 @@ function finish(){
   el.hud.classList.remove('on');
   resetEnd();
   el.end.classList.add('on');
-  el.p1.textContent='四張相都清楚了。';
+  var n=photoCount();
+  el.p1.textContent = n>=4 ? '四張相都清楚了。'
+    : '你記住咗 '+n+' 個地方。\n相仲有幾張係濛嘅，但你已經知道自己想去邊。';
   el.p2.textContent='「呢四張相，係我一直想去嘅地方。\n你揀一張，我哋一齊去。」';
-  setTimeout(function(){ el.frames[0].classList.add('on'); },240);
-  setTimeout(function(){ el.frames[1].classList.add('on'); },460);
-  setTimeout(function(){ el.frames[2].classList.add('on'); },680);
-  setTimeout(function(){ el.frames[3].classList.add('on'); },900);
+  KEYS.forEach(function(k,i){
+    var f=el.frames[i];
+    if(state.photos[k]) setTimeout(function(){ f.classList.add('on'); },240+i*220);
+    else f.classList.add('fog');   // 冇去過／冇記住
+  });
   setTimeout(function(){ el.paper.classList.add('on'); blip(392,.05); },1100);
   setTimeout(function(){
     el.endSmall.textContent='點 一 張 相';
@@ -945,7 +852,7 @@ go.onclick=function(){
 };
 
 el.again.onclick=function(){ boot(); };
-el.frames.forEach(function(f,i){ f.onclick=function(){ choose(KEYS[i]); }; });
+el.frames.forEach(function(f,i){ f.onclick=function(){ if(state.photos[KEYS[i]]) choose(KEYS[i]); }; });
 
 /* ============ 啟動 ============ */
 function boot(){
