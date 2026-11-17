@@ -16,16 +16,14 @@
     display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;z-index:5;
     opacity:0;transition:opacity .8s}
   #hud.on{opacity:1}
-  #slots{display:flex;gap:10px}
-  .slot{width:34px;height:34px;border-radius:50%;
-    border:1px solid rgba(237,230,216,.20);background:rgba(8,11,18,.55);
-    display:flex;align-items:center;justify-content:center;
-    font-size:15px;color:rgba(237,230,216,.26);
-    transition:border-color .5s,color .5s,box-shadow .5s,transform .3s}
-  .slot.got{border-color:rgba(243,193,120,.9);color:#F3C178;
-    box-shadow:0 0 16px rgba(243,193,120,.30);transform:scale(1.05);
-    background-size:cover;background-position:center}
-  .slot.got::after{content:''}
+  #slots{display:flex;justify-content:center}
+  #kept{display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;max-width:86vw}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:20px;
+    border:1px solid rgba(243,193,120,.34);background:rgba(12,15,22,.72);
+    font-size:10.5px;letter-spacing:.06em;color:rgba(246,240,229,.9);
+    animation:chipIn .45s both}
+  .chip i{font-style:normal;font-size:11px;opacity:.85}
+  @keyframes chipIn{from{opacity:0;transform:translateY(-4px) scale(.94)}to{opacity:1;transform:none}}
   #obj{font-size:11.5px;letter-spacing:.16em;color:rgba(237,230,216,.46);
     padding:5px 14px;border-radius:99px;background:rgba(8,11,18,.55);
     border:1px solid rgba(237,230,216,.10);transition:color .5s,border-color .5s}
@@ -148,6 +146,13 @@
   .paper p{margin:0 0 14px;font-size:14px;line-height:2;color:#B4A996}
   .paper .hand{font-size:15.5px;line-height:2.05;color:#E4D9C4;
     letter-spacing:.02em;white-space:pre-line}
+  .kick2{font-size:10px;letter-spacing:.34em;color:rgba(237,230,216,.45);margin-bottom:22px;text-align:center}
+  #endKept{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;max-width:340px;margin:0 auto 18px}
+  #endKept .chip{animation:chipIn .5s both}
+  #endKept .chip s{text-decoration:none;font-size:9.5px;color:rgba(243,193,120,.8);letter-spacing:.06em}
+  #endCalc{font-size:11px;letter-spacing:.14em;color:rgba(237,230,216,.42);margin-bottom:20px;text-align:center;
+    opacity:0;transition:opacity .6s}
+  #endCalc.on{opacity:1}
   #endCity{font-size:36px;letter-spacing:.32em;margin:14px 0 2px;opacity:0;
     transition:opacity 1s,letter-spacing 1.4s;color:#F3C178}
   #endCity.on{opacity:1;letter-spacing:.16em}
@@ -165,13 +170,8 @@
 <canvas id="c"></canvas>
 
 <div id="hud">
-  <div id="slots">
-    <div class="slot" id="s0"></div>
-    <div class="slot" id="s1"></div>
-    <div class="slot" id="s2"></div>
-    <div class="slot" id="s3"></div>
-  </div>
-  <div id="obj">門 後 面 · 0 / 4</div>
+  <div id="slots"><div id="kept"></div></div>
+  <div id="obj">停 低 ， 睇 吓 你 鍾 意 邊 樣</div>
 </div>
 
 <div id="zonetag"></div>
@@ -203,19 +203,11 @@
 
 <div id="end" class="screen">
   <div id="room">
-    <div id="frames">
-      <div class="frame f-a"><i></i><b>紅燈籠</b></div>
-      <div class="frame f-b"><i></i><b>山上面</b></div>
-      <div class="frame f-c"><i></i><b>河邊</b></div>
-      <div class="frame f-d"><i></i><b>夜市</b></div>
-    </div>
-    <div class="paper" id="paper">
-      <p id="p1"></p>
-      <p id="p2" class="hand"></p>
-    </div>
+    <div class="kick2" id="endKick">你 今 晚 停 低 咗 0 次</div>
+    <div id="endKept"></div>
+    <div id="endCalc"></div>
     <div id="endCity"></div>
     <div id="endLine"></div>
-    <div id="endSmall"></div>
     <button class="btn" id="again">再 行 一 次</button>
   </div>
 </div>
@@ -249,36 +241,37 @@ var HOUSE={x:775,y:520};
 var WATER={x0:0,x1:560,y0:648};
 
 var SPOTS=[
-  {zone:'a',x:255,y:300,art:'lantern',label:'紅燈籠',
+  {zone:'a',x:255,y:300,art:'lantern',label:'紅燈籠',city:'sh',
    line:'啲燈紅得好舊，好似細個屋企樓下嗰間。\n雨落喺簷篷上面，一格一格咁响。'},
-  {zone:'a',x:415,y:352,art:'bowl',label:'麵檔',
+  {zone:'a',x:415,y:352,art:'bowl',label:'熱湯麵',city:'tw',
    line:'呢條街落過雨，地下仲反光。\n有檔嘢食仲開住，熱氣由布簾下面漏出嚟。'},
-  {zone:'a',x:330,y:432,art:'photo',label:'一格光',clue:'a',
-   line:'呢一格係雨。紅燈籠，一條好窄嘅街。\n我行入去，鞋底濕咗。'},
+  {zone:'a',x:330,y:432,art:'photo',label:'雨打簷篷',city:'sh',
+   line:'雨打落鐵皮簷篷，响得好實。\n我企喺門邊等咗一陣，唔捨得走。'},
 
-  {zone:'b',x:1216,y:196,art:'bath',label:'澡堂',
-   line:'行到呢度，耳朵突然靜咗。\n遠處有蒸氣，慢慢升上樹頂。'},
-  {zone:'b',x:1146,y:330,art:'lantern',label:'石階燈',
+  {zone:'b',x:1216,y:196,art:'bath',label:'蒸氣',city:'jp',
+   line:'行到呢度，耳朵突然靜咗。\n蒸氣由門縫漏出嚟，暖暖地。'},
+  {zone:'b',x:1146,y:330,art:'lantern',label:'石階',city:'bj',
    line:'石階一級一級，燈隔幾級先有一盞。\n我行到一半，停低聽水聲。'},
-  {zone:'b',x:1182,y:428,art:'photo',label:'一格光',clue:'b',
-   line:'呢一格有蒸氣。山上面嘅澡堂。\n玻璃上面一層霧，乜都睇唔清。'},
+  {zone:'b',x:1182,y:428,art:'photo',label:'松樹',city:'jp',
+   line:'松樹好高，風一吹，成片山都响。\n空氣有陣樹味，凍。'},
 
-  {zone:'c',x:300,y:596,art:'lantern',label:'水面燈',
+  {zone:'c',x:300,y:596,art:'lantern',label:'浮燈',city:'jp',
    line:'水面有燈，一路飄，飄到好遠。\n有人喺對岸放，睇唔到樣。'},
-  {zone:'c',x:452,y:632,art:'boat',label:'小船',
+  {zone:'c',x:452,y:632,art:'boat',label:'小船',city:'sh',
    line:'隻船纜住喺岸邊，纜繩鬆鬆地。\n我想喺度坐一陣，唔講嘢。'},
-  {zone:'c',x:188,y:606,art:'photo',label:'一格光',clue:'c',
-   line:'呢一格係水。燈浮喺水面，一路飄。\n我伸手去掂，凍嘅。'},
+  {zone:'c',x:188,y:606,art:'photo',label:'河水',city:'bj',
+   line:'河水拍住石堤，一下一下。\n我伸手去掂，凍嘅。'},
 
-  {zone:'d',x:930,y:642,art:'stall',label:'麵檔',
+  {zone:'d',x:930,y:642,art:'stall',label:'檔口',city:'bj',
    line:'好多聲。有人叫賣，有人笑，有人同隔籬檔嗌交。\n鑊氣好重。'},
-  {zone:'d',x:1082,y:722,art:'sugar',label:'糖',
+  {zone:'d',x:1082,y:722,art:'sugar',label:'糖',city:'tw',
    line:'糖。買咗一枝，唔捨得食。\n拎住行咗半條街，都仲係暖。'},
-  {zone:'d',x:1220,y:858,art:'photo',label:'一格光',clue:'d',
-   line:'呢一格好熱鬧。帆布下面一盞一盞燈。\n我行到最入，見到有人收檔。'}
+  {zone:'d',x:1220,y:858,art:'photo',label:'人聲',city:'tw',
+   line:'全部人都係本地人，講嘢好快。\n我聽唔明，但覺得好熱鬧。'}
 ];
 SPOTS.forEach(function(s,i){ s.i=i; });
 
+var GLYPH={lantern:'●',bowl:'◡',bath:'≋',boat:'⌣',stall:'▤',sugar:'◍',photo:'▣'};
 var SCENE={a:'assets/scene-a.jpg',b:'assets/scene-b.jpg',c:'assets/scene-c.jpg',d:'assets/scene-d.jpg'};
 var PHOTO={a:'assets/photo-a.jpg',b:'assets/photo-b.jpg',c:'assets/photo-c.jpg',d:'assets/photo-d.jpg'};
 var PHOTO_T={
@@ -296,8 +289,8 @@ var flies=[];
 
 function newState(){
   return {p:{x:HOUSE.x,y:HOUSE.y+66},face:1,moving:false,tgt:null,
-    done:{},seenZone:{},photos:{},stopped:0,counts:{a:0,b:0,c:0,d:0},
-    ended:false,readyToast:false,walk:0,paused:false,photos:{}};
+    done:{},seenZone:{},kept:[],stopped:0,counts:{sh:0,tw:0,jp:0,bj:0},
+    ended:false,walk:0,paused:false};
 }
 
 function resize(){
@@ -491,7 +484,7 @@ function drawSpots(){
 
 function drawHouse(){
   var p=w2s(HOUSE.x,HOUSE.y);
-  var ready=photoCount()>=4&&!state.ended;
+  var ready=keptCount()>=3&&!state.ended;
   var fl=0.86+0.14*Math.sin(t*1.7);
   glow(ctx,p.x,p.y,ready?74:46, ready?('rgba(243,193,120,'+(0.30*fl)+')'):('rgba(243,193,120,'+(0.14*fl)+')'));
   var hp=ctx.createRadialGradient(p.x,p.y+30,0,p.x,p.y+30,ready?46:30);
@@ -559,7 +552,7 @@ function drawWaypoints(){
     if(s.clue===undefined||state.done[s.i]) continue;
     list.push({x:s.x,y:s.y,c:ZONES[s.zone].c,g:'✉'});
   }
-  if(photoCount()>=4&&!state.ended){ list=[{x:HOUSE.x,y:HOUSE.y,c:'#F3C178',g:'⌂'}]; }
+  if(keptCount()>=3&&!state.ended){ list=[{x:HOUSE.x,y:HOUSE.y,c:'#F3C178',g:'⌂'}]; }
   if(!list.length) return;
   list.sort(function(a,b){
     return Math.hypot(a.x-state.p.x,a.y-state.p.y)-Math.hypot(b.x-state.p.x,b.y-state.p.y);
@@ -603,8 +596,8 @@ var el={cap:document.getElementById('cap'),hud:document.getElementById('hud'),
   p1:document.getElementById('p1'),p2:document.getElementById('p2'),
   endCity:document.getElementById('endCity'),endLine:document.getElementById('endLine'),
   endSmall:document.getElementById('endSmall'),again:document.getElementById('again'),
-  frames:[].map.call(document.querySelectorAll('.frame'),function(f){return f;}),
-  slots:[document.getElementById('s0'),document.getElementById('s1'),document.getElementById('s2'),document.getElementById('s3')],
+  endKept:document.getElementById('endKept'),endCalc:document.getElementById('endCalc'),
+  endKick:document.getElementById('endKick'),keptBox:document.getElementById('kept'),
   exp:document.getElementById('exp'),expTitle:document.getElementById('expTitle'),
   expTx:document.getElementById('expTx'),expKeep:document.getElementById('expKeep'),
   expSkip:document.getElementById('expSkip'),expKick:document.getElementById('expKick')};
@@ -629,24 +622,17 @@ function zoneTag(n){
   el.zonetag.textContent=n; el.zonetag.classList.add('on');
   setTimeout(function(){ el.zonetag.classList.remove('on'); },2400);
 }
-function updateSlots(){
-  var keys=['a','b','c','d'];
-  for(var i=0;i<4;i++){
-    var got=!!state.photos[keys[i]];
-    el.slots[i].classList.toggle('got',got);
-    el.slots[i].style.backgroundImage=got?'url('+PHOTO[keys[i]]+')':'none';
-  }
-  var n=photoCount();
-  el.obj.textContent = n>=4 ? '返 屋 企' : '令 四 張 相 清 楚 · '+n+' / 4';
-  el.obj.classList.toggle('ready',n>=4);
+function chipHTML(k){
+  var sp=SPOTS[k];
+  return '<span class="chip"><i>'+GLYPH[sp.art]+'</i>'+sp.label+'</span>';
 }
-function showPhoto(k){
-  el.clueGlyph.innerHTML='<img src="'+PHOTO[k]+'" style="width:132px;height:96px;object-fit:cover;border-radius:3px;border:1px solid rgba(243,193,120,.35)">';
-  el.clueTxt.textContent=PHOTO_T[k]+'\n（相清楚咗一格）';
-  el.clueKick.textContent='呢 一 格 清 楚 了';
-  el.clue.classList.add('on');
-  setTimeout(function(){ el.clue.classList.remove('on'); },2600);
-  blip(520,.10);
+function updateKept(){
+  var box=document.getElementById('kept');
+  var list=state.kept.slice(-5).map(function(k){ return chipHTML(k); }).join('');
+  if(state.kept.length>5) list='<span class="chip"><i>+</i>'+(state.kept.length-5)+'</span>'+list;
+  box.innerHTML=list;
+  el.obj.textContent='停 低 ， 睇 吓 你 鍾 意 邊 樣 · '+state.kept.length;
+  el.obj.classList.toggle('ready',state.kept.length>=3);
 }
 
 /* 音 */
@@ -661,12 +647,14 @@ function blip(freq,vol){
   g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.7);
   o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime+0.72);
 }
+document.getElementById('expKeep').addEventListener('click',function(e){ e.stopPropagation(); keepSpot(); });
+document.getElementById('expSkip').addEventListener('click',function(e){ e.stopPropagation(); closeExp(); });
 document.getElementById('mute').onclick=function(){
   soundOn=!soundOn; this.classList.toggle('off',!soundOn); this.textContent=soundOn?'♪':'♪̸';
 };
 
 /* ============ 互動 ============ */
-function photoCount(){ var n=0; for(var k in state.photos) if(state.photos[k]) n++; return n; }
+function keptCount(){ return state.kept.length; }
 
 function clampTgt(x,y){
   x=clamp(x,40,W-40); y=clamp(y,40,H-40);
@@ -680,7 +668,7 @@ function walkTo(x,y){
 function handleTap(sx,sy){
   if(!started||state.ended||state.paused) return;
   var w=s2w(sx,sy);
-  if(photoCount()>=1 && Math.hypot(w.x-HOUSE.x,w.y-HOUSE.y)<140){
+  if(Math.hypot(w.x-HOUSE.x,w.y-HOUSE.y)<140){
     pending=-2; walkTo(HOUSE.x,HOUSE.y+56); return;
   }
   var best=-1,bd=1e9;
@@ -755,36 +743,25 @@ function closeExp(){
 function keepSpot(){
   var i=curSpot; if(i<0){ closeExp(); return; }
   var s=SPOTS[i];
+  if(state.done[s.i]){ closeExp(); return; }
   state.done[s.i]=true;
   state.stopped++;
-  state.counts[s.zone]++;
-  if(state.order.indexOf(s.zone)<0) state.order.push(s.zone);
-  var newly=!state.photos[s.zone];
-  state.photos[s.zone]=true;
-  updateSlots();
+  state.kept.push(s.i);
+  state.counts[s.city]=(state.counts[s.city]||0)+1;
+  if(state.order.indexOf(s.city)<0) state.order.push(s.city);
+  updateKept();
   blip(660,.06);
   if(navigator.vibrate) navigator.vibrate(16);
   closeExp();
-  if(newly){
-    showPhoto(s.zone);
-    toast('「'+ZONES[s.zone].n+'」嗰張相，清楚咗');
-    if(coachStep<2){ coachStep=2; }
-  }else{
-    say('記住咗。');
-  }
-  if(photoCount()>=4&&!state.readyToast){
-    state.readyToast=true;
-    setTimeout(function(){ toast('四張相都清楚了 · 返屋企'); coach('⌂ 行返屋企'); },1500);
-    setTimeout(function(){ coach(null); },6000);
-  }else if(!state.readyToast&&photoCount()>0){
-    setTimeout(function(){ if(!state.ended) coach('⌂ 想走嘅話，行返屋企'); },2200);
+  say('記住咗。');
+  if(state.kept.length===1) toast('再行多幾個地方，我大概知你想去邊');
+  if(state.kept.length>=3&&!state.hintDone){
+    state.hintDone=true;
+    setTimeout(function(){ coach('⌂ 想走嘅話，行返屋企'); },1800);
     setTimeout(function(){ coach(null); },6200);
   }
 }
-el.expKeep.onclick=function(){ keepSpot(); };
-el.expSkip.onclick=function(){ closeExp(); say('行過就算。'); };
 
-/* ============ 迴圈 ============ */
 function clampCam(){
   var hw=VW/(2*cam.scale), hh=VH/(2*cam.scale);
   if(W<=hw*2) cam.x=W/2; else cam.x=clamp(cam.x,hw,W-hw);
@@ -887,77 +864,68 @@ function frame(ts){
   requestAnimationFrame(frame);
 }
 /* ============ 結局 ============ */
-var CITY={
-  a:{n:'上海',pick:'紅燈籠'},
-  b:{n:'台灣',pick:'山上面'},
-  c:{n:'日本',pick:'河邊'},
-  d:{n:'北京',pick:'夜市'}
+var CITIES={
+  sh:{n:'上海',line:'我哋 12 月，去上海。\n三晚，我帶你行。'},
+  tw:{n:'台灣',line:'我哋 12 月，去台灣。\n三晚，我帶你行。'},
+  jp:{n:'日本',line:'我哋 12 月，去日本。\n三晚，我帶你行。'},
+  bj:{n:'北京',line:'我哋 12 月，去北京。\n三晚，我帶你行。'}
 };
 function winner(){
-  var best=null,bv=-1;
-  for(var k in state.counts){
-    var v=state.counts[k];
+  var keys=['sh','tw','jp','bj'], best=null, bv=-1;
+  keys.forEach(function(k){
+    var v=state.counts[k]||0;
     if(v>bv){ bv=v; best=k; }
     else if(v===bv&&v>0){
       var ai=state.order.indexOf(k), bi=state.order.indexOf(best);
       if(ai>=0&&(bi<0||ai<bi)) best=k;
     }
-  }
-  if(!best||bv===0) best='a';
-  return best;
+  });
+  return best||'sh';
 }
-var KEYS=['a','b','c','d'];
+
 function resetEnd(){
-  el.end.classList.remove('on','choosing');
+  el.end.classList.remove('on');
   el.endCity.textContent=''; el.endCity.classList.remove('on');
   el.endLine.textContent=''; el.endLine.classList.remove('on');
-  el.endSmall.textContent=''; el.endSmall.classList.remove('on');
-  el.paper.classList.remove('on');
+  el.endCalc.textContent=''; el.endCalc.classList.remove('on');
+  el.endKept.innerHTML='';
   el.again.classList.remove('on');
-  el.frames.forEach(function(f){ f.classList.remove('on','sel','dim','fog'); });
 }
+
 function finish(){
   if(state.ended) return;
-  state.ended=true; state.moving=false; state.tgt=null; pending=-1; state.pick=null;
+  state.ended=true; state.moving=false; state.tgt=null; pending=-1;
   coach(null);
   el.hud.classList.remove('on');
   resetEnd();
   el.end.classList.add('on');
-  var n=photoCount();
-  el.p1.textContent = n>=4 ? '四張相都清楚了。'
-    : '你記住咗 '+n+' 個地方。\n相仲有幾張係濛嘅，但你已經知道自己想去邊。';
-  el.p2.textContent='「呢四張相，係我一直想去嘅地方。\n你揀一張，我哋一齊去。」';
-  KEYS.forEach(function(k,i){
-    var f=el.frames[i];
-    if(state.photos[k]) setTimeout(function(){ f.classList.add('on'); },240+i*220);
-    else f.classList.add('fog');   // 冇去過／冇記住
-  });
-  setTimeout(function(){ el.paper.classList.add('on'); blip(392,.05); },1100);
-  setTimeout(function(){
-    el.endSmall.textContent='點 一 張 相';
-    el.endSmall.classList.add('on');
-    el.end.classList.add('choosing');
-  },2600);
-}
-function choose(k){
-  if(state.pick) return;
-  state.pick=k;
-  var city=CITY[k];
-  el.end.classList.remove('choosing');
-  el.endSmall.classList.remove('on');
-  el.frames.forEach(function(f,i){
-    var key=KEYS[i];
-    f.classList.toggle('sel',key===k);
-    f.classList.toggle('dim',key!==k);
-  });
-  blip(523,.07);
-  setTimeout(function(){ el.endCity.textContent=city.n; el.endCity.classList.add('on'); },1000);
-  setTimeout(function(){
-    el.endLine.textContent='你揀咗'+city.pick+'。\n呢度係'+city.n+'。\n我哋 12 月去，三晚。';
-    el.endLine.classList.add('on');
-  },1800);
-  setTimeout(function(){ el.endSmall.textContent='你今晚停低咗 '+state.stopped+' 次'; el.endSmall.classList.add('on'); },2700);
-  setTimeout(function(){ el.again.classList.add('on'); },3200);
+  el.endKick.textContent='你 今 晚 停 低 咗 '+state.kept.length+' 次';
+
+  // 逐件列出她揀嘅嘢
+  el.endKept.innerHTML=state.kept.map(function(i,idx){
+    var sp=SPOTS[i];
+    return '<span class="chip" style="animation-delay:'+(idx*0.14)+'s">'+
+      '<i>'+GLYPH[sp.art]+'</i>'+sp.label+'<s>'+CITIES[sp.city].n+'</s></span>';
+  }).join('');
+
+  if(!state.kept.length){
+    el.endCalc.textContent='你今晚冇停低。';
+    el.endCalc.classList.add('on');
+    el.endCity.textContent='下次再行過';
+    setTimeout(function(){ el.endCity.classList.add('on'); },600);
+    setTimeout(function(){ el.again.classList.add('on'); },1400);
+    return;
+  }
+
+  var k=winner(), city=CITIES[k];
+  var tally=['sh','tw','jp','bj'].filter(function(x){ return (state.counts[x]||0)>0; })
+    .sort(function(a,b){ return (state.counts[b]||0)-(state.counts[a]||0); })
+    .map(function(x){ return CITIES[x].n+' '+state.counts[x]; }).join('  ·  ');
+
+  setTimeout(function(){ el.endCalc.textContent=tally; el.endCalc.classList.add('on'); },700);
+  setTimeout(function(){ el.endCity.textContent=city.n; el.endCity.classList.add('on'); blip(523,.07); },1500);
+  setTimeout(function(){ el.endLine.textContent=city.line; el.endLine.classList.add('on'); },2300);
+  setTimeout(function(){ el.again.classList.add('on'); },3000);
 }
 
 /* ============ 開場 ============ */
@@ -984,12 +952,11 @@ go.onclick=function(){
 };
 
 el.again.onclick=function(){ boot(); };
-el.frames.forEach(function(f,i){ f.onclick=function(){ if(state.photos[KEYS[i]]) choose(KEYS[i]); }; });
 
 /* ============ 啟動 ============ */
 function boot(){
   state=newState();
-  state.order=[]; state.fragShown={}; state.photos={}; state.pick=null;
+  state.order=[]; state.fragShown={};
   order=[]; pending=-1; coachStep=0; movedOnce=false;
   cam={x:HOUSE.x,y:HOUSE.y+70,scale:cam.scale};
   el.end.classList.remove('on');
@@ -997,7 +964,7 @@ function boot(){
   el.cap.classList.remove('on');
   el.toast.classList.remove('on');
   el.coach.classList.remove('on');
-  updateSlots();
+  updateKept();
   istep=0; paintIntro();
   intro.classList.add('on');
   started=false;
@@ -1016,7 +983,7 @@ cv.addEventListener('pointerdown',function(e){
 window.__g={
   state:function(){ return state; },
   spots:function(){ return SPOTS; },
-  photos:function(){ var a=[]; for(var k in state.photos) if(state.photos[k]) a.push(k); return a; },
+  kept:function(){ return state.kept.map(function(i){ return SPOTS[i].label+'·'+CITIES[SPOTS[i].city].n; }); },
   teleport:function(x,y){ state.p.x=x; state.p.y=y; cam.x=x; cam.y=y; },
   tap:function(p){ handleTap(p.x,p.y); },
   walkTo:walkTo, finish:finish, boot:boot,
