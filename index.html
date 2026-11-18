@@ -261,7 +261,7 @@ var WATER={x0:0,x1:560,y0:648};
 var SPOTS=[
   {zone:'a',x:255,y:300,art:'lantern',label:'紅燈籠',city:'sh',scene:'豫園燈火',place:'上海 · 豫園',
    line:'晚上成條街都係紅。\n我哋會行到最尾，你一路抬頭影相。\n返到酒店你會話：「頭先條街好靚。」'},
-  {zone:'a',x:415,y:352,art:'bowl',label:'熱湯麵',city:'tw',scene:'夜市小食',place:'台灣 · 台北寧夏夜市',
+  {zone:'a',x:415,y:352,art:'bowl',label:'熱湯麵',city:'tw',scene:'街邊小食',place:'台灣 · 台南國華街',
    line:'路邊一檔，湯仲滾緊。\n我哋會坐喺膠凳，食到出汗。\n你會叫我食慢啲，自己食得快。'},
   {zone:'a',x:330,y:432,art:'photo',label:'雨打簷篷',city:'sh',scene:'老街散步',place:'上海 · 田子坊',
    line:'雨打鐵皮，响到聽唔到對方講嘢。\n我哋會企喺同一塊簷下，等雨細。\n你會話：「等多陣先走。」'},
@@ -280,12 +280,12 @@ var SPOTS=[
   {zone:'c',x:188,y:606,art:'photo',label:'河水',city:'bj',scene:'湖邊散步',place:'北京 · 什剎海',
    line:'水拍石堤，一下一下。\n我哋會掟石仔，數彈幾下。\n你會贏，然後話係我讓賽。'},
 
-  {zone:'d',x:930,y:642,art:'stall',label:'檔口',city:'bj',scene:'老街小食',place:'北京 · 大柵欄',
-   line:'鑊氣撐起半條街。\n我哋會一人買一樣，交換食。\n你會搶我嗰串，話好食啲。'},
-  {zone:'d',x:1082,y:722,art:'sugar',label:'糖',city:'tw',scene:'老街甜食',place:'台灣 · 台北大稻埕迪化街',
+  {zone:'d',x:930,y:642,art:'lantern',label:'星星人',city:'bj',scene:'星光見面會',place:'北京 · 泡泡瑪特城市樂園',
+   line:'燈一暗，前面成排人一齊叫。\n我哋會企喺外圍，看住星星人慢慢行出嚟。\n你會笑到冇停，話：「真係嚟咗。」'},
+  {zone:'d',x:1082,y:722,art:'sugar',label:'糖',city:'tw',scene:'老街甜食',place:'台灣 · 台南安平老街',
    line:'一枝糖，唔捨得食。\n我哋會一人一口，行到溶。\n你會話：「下次買兩枝。」'},
-  {zone:'d',x:1220,y:858,art:'photo',label:'人聲',city:'tw',scene:'夜裡閒逛',place:'台灣 · 台北西門町',
-   line:'四周都講得好快，聽唔明。\n我哋會跟住人群行，行到唔知邊。\n你會話：「亂行都幾好。」'}
+  {zone:'d',x:1220,y:858,art:'photo',label:'人聲',city:'tw',scene:'夜裡閒逛',place:'台灣 · 台南神農街',
+   line:'四周都講台語，聽唔明。\n我哋會跟住人群行，行到唔知邊。\n你會話：「亂行都幾好。」'}
 ];
 SPOTS.forEach(function(s,i){ s.i=i; });
 
@@ -906,7 +906,7 @@ function frame(ts){
 /* ============ 結局 ============ */
 var CITIES={
   sh:{n:'上海',line:'我哋 12 月，去上海。\n三晚，住人民廣場附近，我帶你行。'},
-  tw:{n:'台灣',line:'我哋 12 月，去台北。\n三晚，住台北車站附近，我帶你行。'},
+  tw:{n:'台灣',line:'我哋 12 月，去台南。\n三晚都住中西區，我帶你行。'},
   jp:{n:'日本',line:'我哋 12 月，去東京・箱根。\n兩晚東京、一晚箱根湯本，我帶你行。'},
   bj:{n:'北京',line:'我哋 12 月，去北京。\n三晚，住鼓樓附近，我帶你行。'}
 };
