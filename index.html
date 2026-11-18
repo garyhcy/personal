@@ -255,12 +255,12 @@ var W=1536,H=1024;
 var IMG={}, loaded=0;
 
 function loadImg(k,src){ var im=new Image(); im.onload=function(){ loaded++; }; im.src=src; IMG[k]=im; }
-loadImg('map','assets/map.jpg');
+loadImg('map','assets/map-park.jpg');
 loadImg('girl','assets/girl-walk.png');
-loadImg('scene-a','assets/scene-a.jpg');
-loadImg('scene-b','assets/scene-b.jpg');
-loadImg('scene-c','assets/scene-c.jpg');
-loadImg('scene-d','assets/scene-d.jpg');
+loadImg('scene-a','assets/scene-a-park.jpg');
+loadImg('scene-b','assets/scene-b-park.jpg');
+loadImg('scene-c','assets/scene-c-park.jpg');
+loadImg('scene-d','assets/scene-d-park.jpg');
 
 function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
 function hexA(h,a){ var n=parseInt(h.slice(1),16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
@@ -277,8 +277,8 @@ var ZONES={
      fr:'夜市最尾一檔，糖同笑聲都黏住唔走。'}
 };
 var CITYC={sh:'#FF8F7A',tw:'#FFC65C',jp:'#F3B0D0',bj:'#94A8FF'};
-var HOUSE={x:775,y:520};
-var WATER={x0:0,x1:560,y0:648};
+var HOUSE={x:775,y:450};
+var WATER={x0:0,x1:560,y0:540};
 
 var SPOTS=[
   {zone:'a',x:255,y:300,art:'lantern',label:'紅燈籠',city:'sh',scene:'豫園燈火',place:'上海 · 豫園',
@@ -295,11 +295,11 @@ var SPOTS=[
   {zone:'b',x:1182,y:428,art:'photo',label:'松樹',city:'jp',scene:'都心森林',place:'日本 · 東京明治神宮',
    line:'風一過，成排樹都响。\n我哋會攞住熱飲，行到凍都要行。\n你會話：「呢度空氣好唔同。」'},
 
-  {zone:'c',x:300,y:596,art:'lantern',label:'河燈',city:'jp',scene:'河岸夜燈',place:'日本 · 東京淺草',
+  {zone:'c',x:420,y:520,art:'lantern',label:'河燈',city:'jp',scene:'河岸夜燈',place:'日本 · 東京淺草',
    line:'水面反住成排燈，一路閃。\n我哋會買杯熱飲，坐喺河邊，等船過。\n你會話：「呢度夜晚幾好。」'},
-  {zone:'c',x:452,y:632,art:'boat',label:'小船',city:'sh',scene:'水鄉小船',place:'上海 · 朱家角',
+  {zone:'c',x:700,y:650,art:'boat',label:'小船',city:'sh',scene:'水鄉小船',place:'上海 · 朱家角',
    line:'隻船纜喺岸邊，纜繩鬆鬆地。\n我哋會坐喺石級，腳吊喺水上面。\n你會話唔想走，但會先企起身。'},
-  {zone:'c',x:188,y:606,art:'photo',label:'河水',city:'bj',scene:'湖邊散步',place:'北京 · 什剎海',
+  {zone:'c',x:750,y:800,art:'photo',label:'河水',city:'bj',scene:'湖邊散步',place:'北京 · 什剎海',
    line:'水拍石堤，一下一下。\n我哋會掟石仔，數彈幾下。\n你會贏，然後話係我讓賽。'},
 
   {zone:'d',x:930,y:642,art:'lantern',label:'見面會',city:'bj',scene:'樂園見面會',place:'北京 · 朝陽公園',
@@ -312,7 +312,7 @@ var SPOTS=[
 SPOTS.forEach(function(s,i){ s.i=i; });
 
 var GLYPH={lantern:'●',bowl:'◡',bath:'≋',boat:'⌣',stall:'▤',sugar:'◍',photo:'▣'};
-var SCENE={a:'assets/scene-a.jpg',b:'assets/scene-b.jpg',c:'assets/scene-c.jpg',d:'assets/scene-d.jpg'};
+var SCENE={a:'assets/scene-a-park.jpg',b:'assets/scene-b-park.jpg',c:'assets/scene-c-park.jpg',d:'assets/scene-d-park.jpg'};
 var PHOTO={a:'assets/photo-a.jpg',b:'assets/photo-b.jpg',c:'assets/photo-c.jpg',d:'assets/photo-d.jpg'};
 var PHOTO_T={
   a:'雨夜，紅燈籠，一條好窄嘅街。',
@@ -323,12 +323,12 @@ var PHOTO_T={
 
 /* ============ 狀態 ============ */
 var state, started=false, pending=-1, t=0, last=0, soundOn=true;
-var cam={x:HOUSE.x,y:HOUSE.y+70,scale:0.9};
+var cam={x:HOUSE.x,y:HOUSE.y+160,scale:0.9};
 var order=[], coachStep=0, movedOnce=false;
 var flies=[];
 
 function newState(){
-  return {p:{x:HOUSE.x,y:HOUSE.y+66},face:1,moving:false,tgt:null,
+  return {p:{x:HOUSE.x,y:HOUSE.y+200},face:1,moving:false,tgt:null,
     done:{},seenZone:{},kept:[],zones:[],stopped:0,counts:{sh:0,tw:0,jp:0,bj:0},
     ended:false,walk:0,paused:false};
 }
@@ -446,34 +446,9 @@ function buildMapLit(){
   if(!(IMG.map&&IMG.map.complete&&IMG.map.naturalWidth)) return;
   var mc=document.createElement('canvas'); mc.width=W; mc.height=H;
   var g=mc.getContext('2d');
-  try{ g.filter='brightness(1.36) saturate(1.28) contrast(1.03)'; }catch(e){}
+  try{ g.filter='brightness(1.04) saturate(1.04) contrast(1.01)'; }catch(e){}
   g.drawImage(IMG.map,0,0,W,H);
   try{ g.filter='none'; }catch(e){}
-
-  // 四區唔同光線：黃昏老街、清晨湯谷、午後河岸、粉色夜市
-  var quads=[
-    {x:300,y:300,c:'#FFB347',a:.55},
-    {x:1175,y:262,c:'#4FE0B0',a:.48},
-    {x:330,y:612,c:'#4EC8F5',a:.52},
-    {x:1150,y:780,c:'#FF7FBF',a:.48}
-  ];
-  g.globalCompositeOperation='soft-light';
-  quads.forEach(function(q){
-    var gr=g.createRadialGradient(q.x,q.y,0,q.x,q.y,760);
-    gr.addColorStop(0,hexA(q.c,q.a));
-    gr.addColorStop(0.52,hexA(q.c,q.a*0.30));
-    gr.addColorStop(1,hexA(q.c,0));
-    g.fillStyle=gr; g.fillRect(0,0,W,H);
-  });
-
-  // 整體日光，令暗位唔再死黑
-  g.globalCompositeOperation='screen';
-  var day=g.createLinearGradient(0,0,W,H);
-  day.addColorStop(0,'rgba(255,241,205,.15)');
-  day.addColorStop(0.48,'rgba(255,249,228,.08)');
-  day.addColorStop(1,'rgba(170,226,246,.10)');
-  g.fillStyle=day; g.fillRect(0,0,W,H);
-  g.globalCompositeOperation='source-over';
   mapLit=mc; mapLitReady=true;
 }
 
@@ -482,7 +457,7 @@ function zoneWash(){
   ctx.globalCompositeOperation='screen';
   for(var k in ZONES){
     var z=ZONES[k], r=620;
-    var a=(state.zoneNow===k?0.24:0.12);
+    var a=(state.zoneNow===k?0.10:0.045);
     var gr=ctx.createRadialGradient(z.x,z.y,0,z.x,z.y,r);
     gr.addColorStop(0,hexA(z.c,a));
     gr.addColorStop(0.56,hexA(z.c,a*0.36));
@@ -527,8 +502,8 @@ function zoneAtmos(){
 function grade(){
   var g2=ctx.createRadialGradient(VW/2,VH*0.46,VH*0.22,VW/2,VH*0.46,Math.max(VW,VH)*0.82);
   g2.addColorStop(0,'rgba(10,18,30,0)');
-  g2.addColorStop(0.78,'rgba(10,18,30,.06)');
-  g2.addColorStop(1,'rgba(10,18,30,.28)');
+  g2.addColorStop(0.78,'rgba(10,18,30,.04)');
+  g2.addColorStop(1,'rgba(10,18,30,.20)');
   ctx.fillStyle=g2; ctx.fillRect(0,0,VW,VH);
 }
 function roundRect(g,x,y,w,h,r){
@@ -1003,7 +978,7 @@ function render(dt){
   buildBloom();
   if(bloomReady){
     ctx.globalCompositeOperation='screen';
-    ctx.globalAlpha=0.42;
+    ctx.globalAlpha=0.12;
     ctx.drawImage(bloomCv,0,0,W,H);
     ctx.globalAlpha=1;
     ctx.globalCompositeOperation='source-over';
@@ -1015,7 +990,7 @@ function render(dt){
     var fy=(H*0.5)+Math.cos(t*0.037+f*1.7)*H*0.26;
     var fr=W*0.34;
     var fg=ctx.createRadialGradient(fx,fy,0,fx,fy,fr);
-    fg.addColorStop(0,'rgba(120,140,180,0.030)');
+    fg.addColorStop(0,'rgba(120,140,180,0.012)');
     fg.addColorStop(1,'rgba(120,140,180,0)');
     ctx.fillStyle=fg; ctx.beginPath(); ctx.arc(fx,fy,fr,0,Math.PI*2); ctx.fill();
   }
@@ -1130,7 +1105,7 @@ function finish(){
 
 /* ============ 開場 ============ */
 var INTRO=[
-  {k:'雨 後 的 燈',t:'你企喺一條唔識嘅街。\n雨停咗，燈一盞一盞亮起。\n你記得一件事：集夠「你鍾意嘅回憶」，就返得屋企。',b:'繼 續'},
+  {k:'樂 園 亮 燈',t:'你企喺一個唔識嘅樂園。\n燈同音樂都亮住，遠處有人笑。\n你記得一件事：集夠「你鍾意嘅回憶」，就返得屋企。',b:'繼 續'},
   {k:'邊 度 都 得',t:'行近啲，停低，睇吓。\n啱你嘅，記住；唔啱嘅，笑住行過。',b:'出 發'}
 ];
 var istep=0, intro=document.getElementById('intro');
